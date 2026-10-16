@@ -200,6 +200,7 @@ async function loadAll(){
   ]);
   if(!e.error) S.essays = e.data;
   if(!f.error){ const m={}; f.data.forEach(r=>m[r.essay_id]=r); S.feedback=m; }
+  S.loadError = e.error||f.error ? (e.error||f.error).message : null;
   S.loaded = true; render();
 }
 let reloadTimer=null, channel=null;
@@ -304,7 +305,7 @@ function renderList(){
       <div class="prompt">${esc(e.prompt)}</div>
       <div class="side">${fb?`${hasScores(fb)?`<span class="band">${fmtBand(fb.overall)}</span>`:""}<span class="chip done">Đã chấm${fb.pdf_path?" · PDF":""}</span>`:`<span class="chip wait">Chờ chấm</span>`}<span class="meta">${e.file_path?"có file · ":""}${e.body?e.words+" từ · ":""}${fmtDate(e.created_at)}</span></div>
     </button>`;}).join("");
-  m.innerHTML = `
+  m.innerHTML = `${S.loadError?`<div class="msg err" style="margin-bottom:12px">Không tải được dữ liệu của lớp (${esc(S.loadError)}). Báo cô kèm ảnh chụp màn hình này.</div>`:""}
     <div class="toolbar">
       <input id="q" type="search" placeholder="Tìm theo tên học sinh hoặc đề bài" value="${esc(S.q)}">
       <select id="flt" aria-label="Lọc"><option value="all">Tất cả bài</option><option value="wait">Chờ chấm</option><option value="done">Đã chấm</option><option value="mine">Bài của tôi</option></select>
@@ -392,6 +393,19 @@ async function openFile(bucket,path){
 function pdfLink(fb){
   return `<div class="file"><span class="chip done">PDF</span><a href="#" data-pdf="${esc(fb.pdf_path)}">${esc(fb.pdf_name||"bai-cham.pdf")}</a><span class="meta">${fmtSize(fb.pdf_size)}</span>${isTeacher()?'<button class="btn ghost" id="pdfDel">Gỡ file</button>':""}</div>`;
 }
+// Gắn link thật (đã ký, hết hạn sau 1 giờ) để mở được cả trong Zalo và Safari
+function linkFiles(root){
+  root.querySelectorAll("[data-pdf],[data-sub]").forEach(a=>{
+    const bucket=a.dataset.pdf?"graded":"submissions", path=a.dataset.pdf||a.dataset.sub;
+    a.removeAttribute("href"); a.style.opacity=".6"; a.setAttribute("aria-busy","true");
+    const opts=a.dataset.dl?{download:a.dataset.dl}:undefined;
+    sb.storage.from(bucket).createSignedUrl(path,3600,opts).then(({data,error})=>{
+      a.style.opacity=""; a.removeAttribute("aria-busy");
+      if(error||!data?.signedUrl){ a.insertAdjacentHTML("afterend",`<span class="msg err" style="display:inline-block;margin-top:6px">Không mở được file${errText(error)}</span>`); return; }
+      a.href=data.signedUrl; a.target="_blank"; a.rel="noopener";
+    });
+  });
+}
 async function openPdf(path){ return openFile("graded",path); }
 async function openPdfOld(path){
   const w=window.open("","_blank");
@@ -426,18 +440,17 @@ function renderDetail(){
         ${e.body?`<div class="label">Bài viết</div>
         <div class="text">${markEssay(e.body, fb?.corrections)}</div>`:""}
         ${e.file_path?subFileBox(e):""}
-        <div class="actions" style="margin-top:18px">${T&&e.body?'<button class="btn" id="dlOne">Tải bài về (Word)</button>':""}${e.file_path?`<button class="btn" id="dlFile">Tải file bài nộp</button>`:""}${(mine&&!fb)||T?`<button class="btn ghost" id="delBtn">${T&&!mine?"Xoá bài":"Rút bài"}</button><span id="delConfirm"></span>`:""}</div><div id="dlMsg" style="margin-top:8px"></div>
+        <div class="actions" style="margin-top:18px">${T&&e.body?'<button class="btn" id="dlOne">Tải bài về (Word)</button>':""}${e.file_path?`<a class="btn" data-sub="${esc(e.file_path)}" data-dl="${esc(e.file_name||"bai-lam")}" href="#">Tải file bài nộp</a>`:""}${(mine&&!fb)||T?`<button class="btn ghost" id="delBtn">${T&&!mine?"Xoá bài":"Rút bài"}</button><span id="delConfirm"></span>`:""}</div><div id="dlMsg" style="margin-top:8px"></div>
       </article>
       <aside>${T?'<div id="pdfBox"></div>':""}<div id="fbSide">${T&&!hasScores(fb)?"":fbHtml}</div></aside>
     </div>`;
   $("#bk").onclick=()=>{S.view="list";S.gradingId=null;render();};
   if(T && !hasScores(fb)) gradeForm(id, fb||null);
   if(T) pdfBox(id);
-  m.querySelectorAll("[data-pdf]").forEach(a=>a.onclick=ev=>{ ev.preventDefault(); openPdf(a.dataset.pdf); });
-  m.querySelectorAll("[data-sub]").forEach(a=>a.onclick=ev=>{ ev.preventDefault(); openFile("submissions",a.dataset.sub); });
+  linkFiles(m);
   if(e.file_path && isImage(e.file_name)) signed("submissions",e.file_path).then(u=>{ const im=$("#subImg"); if(im) im.src=u; }).catch(()=>{});
   $("#editFb")?.addEventListener("click",()=>gradeForm(id, fb));
-  $("#dlFile")?.addEventListener("click",()=>openFile("submissions",e.file_path));
+
   $("#dlOne")?.addEventListener("click",()=>downloadWord([e], `${slug(e.student_name)}-Task${e.task}-${(e.created_at||"").slice(0,10)}.docx`, $("#dlMsg")));
   $("#delBtn")?.addEventListener("click",()=>{
     $("#delConfirm").innerHTML='<span class="small">Chắc chắn?</span> <button class="btn pen" id="delYes">Xoá</button> <button class="btn ghost" id="delNo">Huỷ</button>';
@@ -501,7 +514,7 @@ function pdfBox(id){
     ${fb?.pdf_path?pdfLink(fb):'<p class="small" style="margin:0">Tải bài về, chấm trên máy rồi tải file PDF lên. Học sinh trong lớp đều mở xem được.</p>'}
     <div class="actions"><label class="btn ${fb?.pdf_path?"":"pen"}" for="pdfIn" tabindex="0">${fb?.pdf_path?"Thay file PDF khác":"Tải lên PDF đã chấm"}</label><input type="file" id="pdfIn" accept="application/pdf,.pdf" hidden></div>
     <div id="pdfMsg"></div></div>`;
-  box.querySelectorAll("[data-pdf]").forEach(a=>a.onclick=ev=>{ ev.preventDefault(); openPdf(a.dataset.pdf); });
+  linkFiles(box);
   const lab=box.querySelector('label[for="pdfIn"]'); lab.onkeydown=ev=>{ if(ev.key==="Enter"||ev.key===" "){ ev.preventDefault(); $("#pdfIn").click(); } };
   $("#pdfIn").onchange=async ev=>{
     const f=ev.target.files[0]; if(!f) return; const msg=$("#pdfMsg");

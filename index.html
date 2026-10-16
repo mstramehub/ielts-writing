@@ -164,7 +164,7 @@ textarea.essay{font-family:var(--f-read);font-size:1rem;line-height:1.7;min-heig
   </footer>
 </div>
 
-<script src="config.js"></script>
+<script src="config.js?v=3"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.4/dist/umd/supabase.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.umd.js"></script>
 <script>
@@ -214,7 +214,11 @@ async function onSession(session){
   }
 }
 async function boot(){
-  if(!sb){ $("#main").innerHTML=`<div class="card empty"><strong>Trang chưa được kết nối dữ liệu</strong>Giáo viên cần điền địa chỉ và khoá Supabase vào file <code>config.js</code> (xem README).</div>`; return; }
+  if(!sb){
+    const why = !configured
+      ? `Giáo viên cần điền địa chỉ và khoá Supabase vào file <code>config.js</code> (xem README). Nếu vừa điền xong, bấm Ctrl + F5 để tải lại trang.`
+      : `Không tải được thư viện Supabase. Kiểm tra mạng hoặc tắt trình chặn quảng cáo cho trang này, rồi bấm Ctrl + F5.`;
+    $("#main").innerHTML=`<div class="card empty"><strong>Trang chưa được kết nối dữ liệu</strong>${why}</div>`; return; }
   const {data} = await sb.auth.getSession();
   await onSession(data.session);
   sb.auth.onAuthStateChange((evt,session)=>{ if(evt==="SIGNED_IN"||evt==="SIGNED_OUT"||evt==="USER_UPDATED"){ if(session?.user?.id!==S.session?.user?.id) onSession(session); } });

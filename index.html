@@ -178,6 +178,10 @@ const fmtSize = n => !n ? "" : n<1048576 ? Math.round(n/1024)+" KB" : (n/1048576
 const slug = t => (t||"hoc-sinh").normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/đ/g,"d").replace(/Đ/g,"D").replace(/[^A-Za-z0-9]+/g,"-").replace(/^-|-$/g,"") || "hoc-sinh";
 const store = { get(k){ try{return localStorage.getItem(k)}catch(e){return null} }, set(k,v){ try{localStorage.setItem(k,v)}catch(e){} } };
 const CRIT = [["tr","Task Achievement / Response","TA/TR"],["cc","Coherence & Cohesion","CC"],["lr","Lexical Resource","LR"],["gra","Grammatical Range & Accuracy","GRA"]];
+const FILE_TYPES = {"application/pdf":"pdf","application/msword":"doc","application/vnd.openxmlformats-officedocument.wordprocessingml.document":"docx","image/jpeg":"jpg","image/png":"png"};
+const isImage = n => /\.(jpe?g|png)$/i.test(n||"");
+const safeName = n => { const m=(n||"file").match(/^(.*?)(\.[A-Za-z0-9]{1,5})?$/); return (slug(m[1]).slice(0,60)||"file")+((m[2]||"").toLowerCase()); };
+const errText = e => e?.message ? ` (${esc(e.message)})` : "";
 const hasScores = fb => fb && fb.tr!=null && fb.cc!=null && fb.lr!=null && fb.gra!=null;
 
 const cfg = window.APP_CONFIG || {};
@@ -298,7 +302,7 @@ function renderList(){
     return `<button class="row" data-open="${esc(e.id)}">
       <div class="top"><span class="name">${esc(e.student_name)}</span><span class="chip task">Task ${e.task}</span>${e.user_id===uid()?'<span class="chip role">Bài của tôi</span>':""}</div>
       <div class="prompt">${esc(e.prompt)}</div>
-      <div class="side">${fb?`${hasScores(fb)?`<span class="band">${fmtBand(fb.overall)}</span>`:""}<span class="chip done">Đã chấm${fb.pdf_path?" · PDF":""}</span>`:`<span class="chip wait">Chờ chấm</span>`}<span class="meta">${e.words} từ · ${fmtDate(e.created_at)}</span></div>
+      <div class="side">${fb?`${hasScores(fb)?`<span class="band">${fmtBand(fb.overall)}</span>`:""}<span class="chip done">Đã chấm${fb.pdf_path?" · PDF":""}</span>`:`<span class="chip wait">Chờ chấm</span>`}<span class="meta">${e.file_path?"có file · ":""}${e.body?e.words+" từ · ":""}${fmtDate(e.created_at)}</span></div>
     </button>`;}).join("");
   m.innerHTML = `
     <div class="toolbar">
@@ -332,7 +336,8 @@ function renderSubmit(){
         </div></div>
     </div>
     <label class="f" for="pr">Đề bài<textarea id="pr" rows="3" required maxlength="3000" placeholder="Some people believe that university education should be free for everyone. To what extent do you agree or disagree?"></textarea></label>
-    <label class="f" for="tx">Bài viết<textarea id="tx" class="essay" required maxlength="20000" placeholder="Dán hoặc gõ bài viết của bạn tại đây…"></textarea></label>
+    <label class="f" for="tx">Bài viết<small>Gõ hoặc dán bài vào đây, hoặc đính kèm file bên dưới (có thể làm cả hai)</small><textarea id="tx" class="essay" maxlength="20000" placeholder="Dán hoặc gõ bài viết của bạn tại đây…"></textarea></label>
+    <label class="f" for="fileIn">Đính kèm file bài làm<small>PDF, Word (.doc, .docx) hoặc ảnh chụp bài viết tay (.jpg, .png), tối đa 20 MB</small><input id="fileIn" type="file" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png"></label>
     <div class="actions"><button class="btn primary" type="submit" id="sendBtn">Nộp bài</button><span class="wc" id="wc">0 từ</span></div>
     <div id="fmsg"></div>
   </form>`;
@@ -343,9 +348,23 @@ function renderSubmit(){
     ev.preventDefault();
     const btn=$("#sendBtn"), msg=$("#fmsg"); btn.disabled=true; msg.innerHTML="";
     const name=$("#nm").value.trim(), body=$("#tx").value.trim(), prompt=$("#pr").value.trim(), task=$("#t1").checked?1:2;
+    const file=$("#fileIn").files[0];
+    if(!body && !file){ btn.disabled=false; msg.innerHTML='<div class="msg err">Hãy gõ bài viết hoặc đính kèm file bài làm.</div>'; return; }
+    let fileRow={};
+    if(file){
+      if(file.size>20*1048576){ btn.disabled=false; msg.innerHTML='<div class="msg err">File lớn hơn 20 MB. Hãy nén hoặc chụp ảnh nhỏ hơn.</div>'; return; }
+      const ext=(file.name.match(/\.([A-Za-z0-9]+)$/)||[])[1]?.toLowerCase();
+      const type=file.type||({pdf:"application/pdf",doc:"application/msword",docx:"application/vnd.openxmlformats-officedocument.wordprocessingml.document",jpg:"image/jpeg",jpeg:"image/jpeg",png:"image/png"})[ext];
+      if(!FILE_TYPES[type]){ btn.disabled=false; msg.innerHTML='<div class="msg err">Chỉ nhận file PDF, Word (.doc, .docx) hoặc ảnh .jpg, .png.</div>'; return; }
+      msg.innerHTML='<span class="small">Đang tải file lên…</span>';
+      const path=`${uid()}/${Date.now()}-${safeName(file.name)}`;
+      const up=await sb.storage.from("submissions").upload(path,file,{contentType:type,upsert:false});
+      if(up.error){ btn.disabled=false; msg.innerHTML=`<div class="msg err">Chưa tải file lên được${errText(up.error)}. Báo cô nếu lỗi lặp lại.</div>`; return; }
+      fileRow={file_path:path,file_name:file.name,file_size:file.size};
+    }
     if(name!==S.profile?.full_name){ const r=await sb.from("profiles").update({full_name:name}).eq("id",uid()); if(!r.error) S.profile.full_name=name; }
-    const {data,error}=await sb.from("essays").insert({student_name:name,task,prompt,body,words:words(body)}).select().single();
-    if(error){ btn.disabled=false; msg.innerHTML='<div class="msg err">Chưa gửi được bài. Kiểm tra mạng rồi bấm “Nộp bài” lần nữa; bài viết vẫn được giữ.</div>'; return; }
+    const {data,error}=await sb.from("essays").insert({student_name:name,task,prompt,body,words:words(body),...fileRow}).select().single();
+    if(error){ if(fileRow.file_path) await sb.storage.from("submissions").remove([fileRow.file_path]); btn.disabled=false; msg.innerHTML=`<div class="msg err">Chưa gửi được bài${errText(error)}. Bấm “Nộp bài” lần nữa; bài viết vẫn được giữ.</div>`; return; }
     store.set("ielts-draft","");
     S.essays=[data,...S.essays]; S.sel=data.id; S.view="detail"; render(); window.scrollTo(0,0);
   };
@@ -361,10 +380,20 @@ function markEssay(text, corrections){
   return html;
 }
 
+function subFileBox(e){
+  return `<div class="pdfbox" style="margin:14px 0 4px"><div class="label" style="margin:0">Bài nộp dạng file</div><div class="file"><span class="chip task">${esc(((e.file_name||"").split(".").pop()||"FILE").toUpperCase())}</span><a href="#" data-sub="${esc(e.file_path)}">${esc(e.file_name||"bai-lam")}</a><span class="meta">${fmtSize(e.file_size)}</span></div>${isImage(e.file_name)?`<img id="subImg" alt="Ảnh bài làm của ${esc(e.student_name)}" style="border-radius:8px;border:1px solid var(--line)">`:""}</div>`;
+}
+async function signed(bucket,path){ const {data,error}=await sb.storage.from(bucket).createSignedUrl(path,3600); if(error) throw error; return data.signedUrl; }
+async function openFile(bucket,path){
+  const w=window.open("","_blank");
+  try{ const url=await signed(bucket,path); if(w) w.location=url; else location.href=url; }
+  catch(err){ if(w) w.close(); alert("Không mở được file. "+(err?.message||"Thử lại sau.")); }
+}
 function pdfLink(fb){
   return `<div class="file"><span class="chip done">PDF</span><a href="#" data-pdf="${esc(fb.pdf_path)}">${esc(fb.pdf_name||"bai-cham.pdf")}</a><span class="meta">${fmtSize(fb.pdf_size)}</span>${isTeacher()?'<button class="btn ghost" id="pdfDel">Gỡ file</button>':""}</div>`;
 }
-async function openPdf(path){
+async function openPdf(path){ return openFile("graded",path); }
+async function openPdfOld(path){
   const w=window.open("","_blank");
   const {data,error}=await sb.storage.from("graded").createSignedUrl(path,3600);
   if(error||!data?.signedUrl){ if(w) w.close(); alert("Không mở được file PDF. Thử lại sau."); return; }
@@ -392,11 +421,12 @@ function renderDetail(){
     <div class="detail">
       <article class="card sheet">
         <div class="actions" style="justify-content:space-between"><h2>${esc(e.student_name)}</h2><span class="chip task">Task ${e.task}</span></div>
-        <div class="meta">${e.words} từ · nộp ${fmtDate(e.created_at)}${e.words<(e.task==1?150:250)?` · <span style="color:var(--pen)">dưới số từ tối thiểu</span>`:""}</div>
+        <div class="meta">${e.body?e.words+" từ · ":""}nộp ${fmtDate(e.created_at)}${e.body&&e.words<(e.task==1?150:250)?` · <span style="color:var(--pen)">dưới số từ tối thiểu</span>`:""}</div>
         <div class="q">${esc(e.prompt)}</div>
-        <div class="label">Bài viết</div>
-        <div class="text">${markEssay(e.body, fb?.corrections)}</div>
-        <div class="actions" style="margin-top:18px">${T?'<button class="btn" id="dlOne">Tải bài về (Word)</button>':""}${(mine&&!fb)||T?`<button class="btn ghost" id="delBtn">${T&&!mine?"Xoá bài":"Rút bài"}</button><span id="delConfirm"></span>`:""}</div><div id="dlMsg" style="margin-top:8px"></div>
+        ${e.body?`<div class="label">Bài viết</div>
+        <div class="text">${markEssay(e.body, fb?.corrections)}</div>`:""}
+        ${e.file_path?subFileBox(e):""}
+        <div class="actions" style="margin-top:18px">${T&&e.body?'<button class="btn" id="dlOne">Tải bài về (Word)</button>':""}${e.file_path?`<button class="btn" id="dlFile">Tải file bài nộp</button>`:""}${(mine&&!fb)||T?`<button class="btn ghost" id="delBtn">${T&&!mine?"Xoá bài":"Rút bài"}</button><span id="delConfirm"></span>`:""}</div><div id="dlMsg" style="margin-top:8px"></div>
       </article>
       <aside>${T?'<div id="pdfBox"></div>':""}<div id="fbSide">${T&&!hasScores(fb)?"":fbHtml}</div></aside>
     </div>`;
@@ -404,15 +434,19 @@ function renderDetail(){
   if(T && !hasScores(fb)) gradeForm(id, fb||null);
   if(T) pdfBox(id);
   m.querySelectorAll("[data-pdf]").forEach(a=>a.onclick=ev=>{ ev.preventDefault(); openPdf(a.dataset.pdf); });
+  m.querySelectorAll("[data-sub]").forEach(a=>a.onclick=ev=>{ ev.preventDefault(); openFile("submissions",a.dataset.sub); });
+  if(e.file_path && isImage(e.file_name)) signed("submissions",e.file_path).then(u=>{ const im=$("#subImg"); if(im) im.src=u; }).catch(()=>{});
   $("#editFb")?.addEventListener("click",()=>gradeForm(id, fb));
+  $("#dlFile")?.addEventListener("click",()=>openFile("submissions",e.file_path));
   $("#dlOne")?.addEventListener("click",()=>downloadWord([e], `${slug(e.student_name)}-Task${e.task}-${(e.created_at||"").slice(0,10)}.docx`, $("#dlMsg")));
   $("#delBtn")?.addEventListener("click",()=>{
     $("#delConfirm").innerHTML='<span class="small">Chắc chắn?</span> <button class="btn pen" id="delYes">Xoá</button> <button class="btn ghost" id="delNo">Huỷ</button>';
     $("#delNo").onclick=()=>{$("#delConfirm").innerHTML="";};
     $("#delYes").onclick=async()=>{
-      if(fb?.pdf_path) await sb.storage.from("graded").remove([fb.pdf_path]);
       const {error}=await sb.from("essays").delete().eq("id",id);
-      if(error){ $("#delConfirm").innerHTML='<span class="msg err">Chưa xoá được. Thử lại sau.</span>'; return; }
+      if(error){ $("#delConfirm").innerHTML=`<span class="msg err">Chưa xoá được${errText(error)}.</span>`; return; }
+      if(fb?.pdf_path) await sb.storage.from("graded").remove([fb.pdf_path]);
+      if(e.file_path) await sb.storage.from("submissions").remove([e.file_path]);
       S.essays=S.essays.filter(x=>x.id!==id); delete S.feedback[id]; S.view="list"; render();
     };
   });
@@ -455,7 +489,7 @@ function gradeForm(id, fb){
       corrections:corr.filter(c=>(c.from||"").trim()||(c.to||"").trim()).map(c=>({from:c.from.trim(),to:c.to.trim(),note:(c.note||"").trim()})),
       graded_at:new Date().toISOString()};
     const {data,error}=await sb.from("feedback").upsert(row,{onConflict:"essay_id"}).select().single();
-    if(error){ $("#saveG").disabled=false; g.innerHTML='<div class="msg err">Chưa lưu được. Kiểm tra tài khoản đã được đặt quyền giáo viên chưa, rồi thử lại.</div>'; return; }
+    if(error){ $("#saveG").disabled=false; g.innerHTML=`<div class="msg err">Chưa lưu được${errText(error)}. Kiểm tra tài khoản đã được đặt quyền giáo viên chưa.</div>`; return; }
     S.feedback[id]=data; S.gradingId=null; renderDetail();
   };
 }
@@ -476,10 +510,10 @@ function pdfBox(id){
     msg.innerHTML='<span class="small">Đang tải lên…</span>';
     const path=`${id}/${Date.now()}.pdf`;
     const up=await sb.storage.from("graded").upload(path,f,{contentType:"application/pdf",upsert:false});
-    if(up.error){ msg.innerHTML='<div class="msg err">Chưa tải lên được. Kiểm tra quyền giáo viên rồi thử lại.</div>'; return; }
+    if(up.error){ msg.innerHTML=`<div class="msg err">Chưa tải lên được${errText(up.error)}. Kiểm tra đã chạy bản schema.sql mới nhất và tài khoản đã có quyền giáo viên.</div>`; return; }
     const old=S.feedback[id];
     const {data,error}=await sb.from("feedback").upsert({essay_id:id,pdf_path:path,pdf_name:f.name,pdf_size:f.size,...(old?{}:{graded_at:new Date().toISOString()})},{onConflict:"essay_id"}).select().single();
-    if(error){ await sb.storage.from("graded").remove([path]); msg.innerHTML='<div class="msg err">Chưa lưu được file. Thử lại sau.</div>'; return; }
+    if(error){ await sb.storage.from("graded").remove([path]); msg.innerHTML=`<div class="msg err">Chưa lưu được file${errText(error)}.</div>`; return; }
     if(old?.pdf_path) await sb.storage.from("graded").remove([old.pdf_path]);
     S.feedback[id]=data; S.gradingId=null; renderDetail();
   };
@@ -506,6 +540,8 @@ async function downloadWord(list, filename, msgEl){
     children.push(new Paragraph({children:[new TextRun({text:`IELTS Writing Task ${e.task} · ${e.words} từ · nộp ${fmtDate(e.created_at)}`,color:"5B6579",size:20})]}));
     children.push(new Paragraph({spacing:{before:200,after:120},children:[new TextRun({text:"Đề bài",bold:true})]}));
     (e.prompt||"").split(/\n+/).forEach(t=>children.push(new Paragraph({children:[new TextRun({text:t,italics:true})]})));
+    if(e.file_path) children.push(new Paragraph({spacing:{before:200},children:[new TextRun({text:`Học sinh nộp kèm file: ${e.file_name} (mở trên web để tải về)`,color:"B4232C"})]}));
+    if(!e.body) return;
     children.push(new Paragraph({spacing:{before:240,after:120},children:[new TextRun({text:"Bài viết",bold:true})]}));
     (e.body||"").split(/\n+/).filter(t=>t.trim()).forEach(t=>children.push(new Paragraph({spacing:{after:160,line:360},children:[new TextRun({text:t,size:24,font:"Times New Roman"})]})));
   });

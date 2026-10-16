@@ -35,6 +35,12 @@ create table if not exists public.feedback (
   graded_at   timestamptz not null default now()
 );
 
+-- Bài nộp dạng file (PDF, Word, ảnh chụp) — thêm cột cho bảng có sẵn
+alter table public.essays add column if not exists file_path text;
+alter table public.essays add column if not exists file_name text;
+alter table public.essays add column if not exists file_size bigint;
+alter table public.essays alter column body set default '';
+
 -- 2. Ai là giáo viên ------------------------------------------------------
 create or replace function public.is_teacher()
 returns boolean language sql stable security definer set search_path = public as $$
@@ -91,7 +97,8 @@ create policy "feedback delete" on public.feedback for delete to authenticated u
 -- 4. Kho file PDF bài chấm ------------------------------------------------
 insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
 values ('graded', 'graded', false, 20971520, array['application/pdf'])
-on conflict (id) do nothing;
+on conflict (id) do update set file_size_limit = excluded.file_size_limit,
+                               allowed_mime_types = excluded.allowed_mime_types;
 
 drop policy if exists "graded read"   on storage.objects;
 drop policy if exists "graded insert" on storage.objects;
@@ -101,6 +108,27 @@ create policy "graded read"   on storage.objects for select to authenticated usi
 create policy "graded insert" on storage.objects for insert to authenticated with check (bucket_id = 'graded' and public.is_teacher());
 create policy "graded update" on storage.objects for update to authenticated using (bucket_id = 'graded' and public.is_teacher());
 create policy "graded delete" on storage.objects for delete to authenticated using (bucket_id = 'graded' and public.is_teacher());
+
+-- 4b. Kho file bài nộp của học sinh ----------------------------------------
+-- Mỗi học sinh chỉ tải file vào thư mục mang mã tài khoản của mình.
+insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+values ('submissions', 'submissions', false, 20971520, array[
+  'application/pdf',
+  'application/msword',
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  'image/jpeg', 'image/png'])
+on conflict (id) do update set file_size_limit = excluded.file_size_limit,
+                               allowed_mime_types = excluded.allowed_mime_types;
+
+drop policy if exists "submissions read"   on storage.objects;
+drop policy if exists "submissions insert" on storage.objects;
+drop policy if exists "submissions delete" on storage.objects;
+create policy "submissions read" on storage.objects for select to authenticated
+  using (bucket_id = 'submissions');
+create policy "submissions insert" on storage.objects for insert to authenticated
+  with check (bucket_id = 'submissions' and (storage.foldername(name))[1] = auth.uid()::text);
+create policy "submissions delete" on storage.objects for delete to authenticated
+  using (bucket_id = 'submissions' and ((storage.foldername(name))[1] = auth.uid()::text or public.is_teacher()));
 
 -- 5. Cập nhật trực tiếp (bài mới, nhận xét mới hiện ngay) ------------------
 do $$ begin
@@ -112,3 +140,11 @@ exception when duplicate_object then null; end $$;
 -- (thay email của bạn vào) để tài khoản đó thành giáo viên:
 -- update public.profiles set role = 'teacher'
 --   where id = (select id from auth.users where email = 'EMAIL_CUA_BAN@gmail.com');
+
+-- 7. Kiểm tra nhanh (chạy riêng khi cần) ---------------------------------
+-- Ai đang là giáo viên:
+--   select u.email, p.full_name, p.role from public.profiles p join auth.users u on u.id = p.id order by p.role desc;
+-- Tài khoản đăng ký TRƯỚC khi chạy file này sẽ chưa có hồ sơ; dòng dưới tạo bù:
+insert into public.profiles (id, full_name)
+select u.id, coalesce(u.raw_user_meta_data->>'full_name', '') from auth.users u
+on conflict (id) do nothing;

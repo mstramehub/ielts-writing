@@ -1,7 +1,7 @@
 # Lớp IELTS Writing | IELTS SPEEDING-UP
 
 Web nộp bài IELTS Writing của **Ms Trâm English Hub**.
-Học sinh nộp bài, giáo viên chấm (trên web hoặc tải về rồi gửi lại PDF), cả lớp xem được bài và nhận xét của nhau.
+Học sinh nộp bài (gõ trực tiếp hoặc file PDF, Word, ảnh chụp), giáo viên chấm (trên web hoặc tải về rồi gửi lại PDF), cả lớp xem được bài và nhận xét của nhau.
 
 Hotline/Zalo: 079 29 51 529 · 0898 123 696 — 12 Lê Đình Chinh, Quy Nhơn Nam
 

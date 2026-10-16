@@ -1,0 +1,525 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>IELTS Speeding-Up Writing · Ms Trâm English Hub</title>
+<meta name="description" content="Lớp IELTS Writing | IELTS SPEEDING-UP — nộp bài, xem điểm và nhận xét của giáo viên.">
+<link rel="icon" href="logo-mark.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=Literata:opsz,wght@7..72,400;7..72,600&family=Cormorant+Garamond:wght@500;600&display=swap">
+<style>
+body{margin:0}
+[hidden]{display:none!important}
+img{max-width:100%}
+:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+/* Layout: one reading column; class list → essay sheet with teacher's red-pen feedback beside it on wide screens */
+:root{
+  --bg:#f3f5f8; --surface:#ffffff; --ink:#18233a; --muted:#5b6579; --line:#dde2ea;
+  --accent:#0b5d8f; --accent-soft:#e1f1fb; --sky:#29b6f0; --pen:#b4232c; --pen-soft:#fbeaea;
+  --ok:#1d7a4f; --ok-soft:#e3f3ea; --wait:#9a6400; --wait-soft:#fbf1dc;
+  --f-ui:"Be Vietnam Pro",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-read:"Literata",Georgia,"Times New Roman",serif;
+  --f-brand:"Cormorant Garamond","Literata",Georgia,serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#10141d; --surface:#181e2a; --ink:#e6e9f0; --muted:#98a1b3; --line:#2a3242;
+  --accent:#62c4f2; --accent-soft:#12324a; --sky:#29b6f0; --pen:#f0787e; --pen-soft:#3a1d22;
+  --ok:#6cc79a; --ok-soft:#173226; --wait:#e2b45a; --wait-soft:#33290f; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#10141d; --surface:#181e2a; --ink:#e6e9f0; --muted:#98a1b3; --line:#2a3242;
+  --accent:#62c4f2; --accent-soft:#12324a; --sky:#29b6f0; --pen:#f0787e; --pen-soft:#3a1d22;
+  --ok:#6cc79a; --ok-soft:#173226; --wait:#e2b45a; --wait-soft:#33290f; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-ui);font-size:15px;line-height:1.5}
+.wrap{max-width:1080px;margin:0 auto;padding-block:20px 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+header{display:flex;flex-wrap:wrap;align-items:center;gap:12px 20px;justify-content:space-between;margin-bottom:14px}
+.brand{display:flex;align-items:center;gap:10px}
+.brand img{width:60px;height:40px;display:block}
+.bn{font-weight:700;font-size:1.25rem;line-height:1;letter-spacing:-.01em}
+.bs{font-family:var(--f-brand);font-size:1.15rem;line-height:1.1;font-weight:500}
+.classhead{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 14px;padding:18px 0 6px;border-top:1px solid var(--line)}
+h1{font-size:1.6rem;margin:0;letter-spacing:-.01em;text-wrap:balance}
+h1 .sep{color:var(--line);font-weight:400;margin:0 .15em}
+h1 .su{color:var(--accent);letter-spacing:.04em}
+.tagline{font-size:.75rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.contact{display:flex;flex-wrap:wrap;gap:4px 18px;font-size:.85rem;color:var(--muted);margin-bottom:18px}
+.contact b{color:var(--ink);font-variant-numeric:tabular-nums;font-weight:600;user-select:all}
+.contact a{color:var(--accent);font-weight:600}
+footer{margin-top:40px;padding-top:18px;border-top:1px solid var(--line);display:flex;flex-wrap:wrap;gap:16px 28px;align-items:center;font-size:.85rem;color:var(--muted)}
+footer .brand img{width:48px;height:32px}
+.pdfbox{display:flex;flex-direction:column;gap:10px}
+.pdfbox .file{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;padding:10px 12px;background:var(--bg);border-radius:8px}
+.pdfbox .file a{font-weight:600;color:var(--accent);overflow-wrap:anywhere}
+aside{display:flex;flex-direction:column;gap:16px;min-width:0}
+.who{font-size:.85rem;color:var(--muted);display:flex;gap:8px;align-items:center}
+.chip{display:inline-flex;align-items:center;gap:4px;padding:2px 9px;border-radius:999px;font-size:.75rem;font-weight:600;letter-spacing:.02em;white-space:nowrap}
+.chip.role{background:var(--accent-soft);color:var(--accent)}
+.chip.task{background:var(--accent-soft);color:var(--accent)}
+.chip.wait{background:var(--wait-soft);color:var(--wait)}
+.chip.done{background:var(--ok-soft);color:var(--ok)}
+nav{display:flex;gap:4px;border-bottom:1px solid var(--line);margin-bottom:18px;overflow-x:auto}
+nav button{background:none;border:0;border-bottom:2px solid transparent;padding:10px 14px;font:inherit;font-weight:600;color:var(--muted);cursor:pointer;white-space:nowrap}
+nav button[aria-current="true"]{color:var(--ink);border-color:var(--pen)}
+nav .count{font-weight:500;color:var(--pen);margin-left:4px}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.btn{border:1px solid var(--line);background:var(--surface);padding:8px 14px;border-radius:8px;font-weight:600;cursor:pointer}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--surface)}
+.btn.pen{background:var(--pen);border-color:var(--pen);color:var(--surface)}
+.btn.ghost{border-color:transparent;background:none;color:var(--muted)}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.toolbar{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+.toolbar input,.toolbar select{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:8px 10px}
+.toolbar input{flex:1 1 200px;min-width:0}
+.list{display:flex;flex-direction:column;border:1px solid var(--line);border-radius:10px;background:var(--surface);overflow:hidden}
+.row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 16px;padding:14px 16px;border-top:1px solid var(--line);cursor:pointer;text-align:left;background:none;border-left:0;border-right:0;border-bottom:0;width:100%}
+.row:first-child{border-top:0}
+.row:hover{background:var(--bg)}
+.row .top{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center;min-width:0}
+.row .name{font-weight:600}
+.row .prompt{grid-column:1;color:var(--muted);font-size:.88rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.row .side{grid-row:1/3;grid-column:2;display:flex;flex-direction:column;align-items:flex-end;justify-content:center;gap:2px}
+.band{font-variant-numeric:tabular-nums;font-weight:700;font-size:1.35rem;color:var(--pen);line-height:1}
+.meta{font-size:.78rem;color:var(--muted);font-variant-numeric:tabular-nums}
+.empty{padding:40px 20px;text-align:center;color:var(--muted)}
+.empty strong{display:block;color:var(--ink);margin-bottom:4px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:20px}
+label.f{display:flex;flex-direction:column;gap:6px;font-weight:600;font-size:.9rem}
+label.f small{font-weight:400;color:var(--muted)}
+.f input,.f textarea,.f select{border:1px solid var(--line);background:var(--bg);border-radius:8px;padding:10px 12px;font-weight:400}
+.f textarea{resize:vertical}
+textarea.essay{font-family:var(--f-read);font-size:1rem;line-height:1.7;min-height:320px}
+.form{display:flex;flex-direction:column;gap:16px}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px}
+.seg{display:flex;gap:6px}
+.seg label{flex:1;border:1px solid var(--line);border-radius:8px;padding:10px;cursor:pointer;text-align:center;font-weight:600;background:var(--bg)}
+.seg label small{display:block;font-weight:400;color:var(--muted);font-size:.78rem}
+.seg input{position:absolute;opacity:0;pointer-events:none}
+.seg label:has(input:checked){border-color:var(--accent);background:var(--accent-soft);color:var(--accent)}
+.seg label:has(input:focus-visible){outline:2px solid var(--accent)}
+.wc{font-variant-numeric:tabular-nums;font-size:.85rem;color:var(--muted)}
+.wc.low{color:var(--pen)}
+.msg{padding:10px 12px;border-radius:8px;font-size:.9rem}
+.msg.err{background:var(--pen-soft);color:var(--pen)}
+.msg.ok{background:var(--ok-soft);color:var(--ok)}
+.detail{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:20px;align-items:start}
+@media (max-width:820px){.detail{grid-template-columns:minmax(0,1fr)}}
+.back{margin-bottom:12px}
+.sheet h2{font-size:1.15rem;margin:0 0 4px}
+.sheet .q{background:var(--bg);border-left:3px solid var(--accent);padding:10px 14px;margin:14px 0;font-size:.92rem;white-space:pre-wrap;border-radius:0 8px 8px 0}
+.label{font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600;margin-bottom:6px}
+.text{font-family:var(--f-read);font-size:1.02rem;line-height:1.8;white-space:pre-wrap;overflow-wrap:anywhere}
+.text mark{background:var(--pen-soft);color:inherit;text-decoration:underline wavy var(--pen);text-underline-offset:4px;padding:0 1px;border-radius:2px}
+.text sup{color:var(--pen);font-family:var(--f-ui);font-weight:700;font-size:.65em;margin-left:1px}
+.fb{border-color:var(--pen);border-width:1px 1px 1px 4px}
+.fb h3{margin:0 0 12px;font-size:1rem;color:var(--pen)}
+.scores{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-bottom:12px}
+.score{background:var(--bg);border-radius:8px;padding:8px;text-align:center}
+.score b{display:block;font-size:1.25rem;font-variant-numeric:tabular-nums}
+.score span{font-size:.72rem;color:var(--muted);font-weight:600}
+.overall{display:flex;align-items:baseline;gap:10px;margin-bottom:14px}
+.overall .band{font-size:2.2rem}
+.comment{white-space:pre-wrap;font-size:.95rem;overflow-wrap:anywhere}
+.corr{list-style:none;padding:0;margin:12px 0 0;display:flex;flex-direction:column;gap:10px}
+.corr li{font-size:.9rem;border-top:1px dashed var(--line);padding-top:10px;overflow-wrap:anywhere}
+.corr .n{color:var(--pen);font-weight:700;margin-right:6px}
+.corr del{color:var(--pen)}
+.corr ins{color:var(--ok);text-decoration:none;font-weight:600}
+.corr .note{color:var(--muted);display:block;margin-top:2px}
+.gform select{width:100%}
+.crow{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) auto;gap:6px;align-items:start}
+.crow textarea{grid-column:1/3;min-height:0}
+.crow input,.crow textarea{border:1px solid var(--line);background:var(--bg);border-radius:6px;padding:7px 9px;min-width:0;width:100%}
+.crow .x{grid-row:1;grid-column:3}
+.actions{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.small{font-size:.82rem;color:var(--muted)}
+@media (prefers-reduced-motion:no-preference){.row,.btn{transition:background .15s}}
+</style>
+<style>
+.auth{max-width:420px;margin:24px auto 0}
+.auth .seg{margin-bottom:16px}
+.auth .seg button{flex:1;border:1px solid var(--line);border-radius:8px;padding:10px;background:var(--bg);font-weight:600;cursor:pointer}
+.auth .seg button[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft);color:var(--accent)}
+.who .btn{padding:5px 10px;font-size:.8rem}
+.who .nm{color:var(--ink);font-weight:600}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="brand"><img src="logo-mark.png" alt="Ms Trâm English Hub"><div><div class="bn">Ms Trâm</div><div class="bs">english hub</div></div></div>
+    <div class="who" id="who"></div>
+  </header>
+  <div class="classhead"><h1>LỚP IELTS Writing<span class="sep">|</span><span class="su">IELTS SPEEDING-UP</span></h1><span class="tagline">Tiếng Anh cho mọi lứa tuổi</span></div>
+  <div class="contact"><span>Zalo/HP: <b>079 29 51 529</b> · <b>0898 123 696</b></span><span>12 Lê Đình Chinh, Quy Nhơn Nam</span><a href="https://zalo.me/0792951529" target="_blank" rel="noopener">Nhắn Zalo</a></div>
+  <nav id="nav" hidden>
+    <button data-v="list" aria-current="true">Bài của lớp<span class="count" id="pendingCount"></span></button>
+    <button data-v="submit">Nộp bài</button>
+  </nav>
+  <main id="main"><div class="card empty">Đang tải…</div></main>
+  <footer>
+    <div class="brand"><img src="logo-mark.png" alt=""><div><div class="bn" style="font-size:1rem">Ms Trâm</div><div class="bs" style="font-size:1rem">english hub</div></div></div>
+    <div>Hotline/Zalo: <b>079 29 51 529</b> · <b>0898 123 696</b><br>12 Lê Đình Chinh, Quy Nhơn Nam</div>
+  </footer>
+</div>
+
+<script src="config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.umd.js"></script>
+<script>
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const words = t => (t.trim().match(/[A-Za-zÀ-ỹ0-9'’-]+/g) || []).length;
+const overallBand = s => { const v=[s.tr,s.cc,s.lr,s.gra]; if(v.some(x=>x==null||x==="")) return null; return Math.round(v.reduce((a,b)=>a+Number(b),0)/4*2)/2; };
+const fmtBand = b => b==null ? "–" : Number(b).toFixed(1);
+const fmtDate = iso => { try{ return new Date(iso).toLocaleString("vi-VN",{day:"2-digit",month:"2-digit",year:"numeric",hour:"2-digit",minute:"2-digit"}); }catch(e){ return ""; } };
+const fmtSize = n => !n ? "" : n<1048576 ? Math.round(n/1024)+" KB" : (n/1048576).toFixed(1)+" MB";
+const slug = t => (t||"hoc-sinh").normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/đ/g,"d").replace(/Đ/g,"D").replace(/[^A-Za-z0-9]+/g,"-").replace(/^-|-$/g,"") || "hoc-sinh";
+const store = { get(k){ try{return localStorage.getItem(k)}catch(e){return null} }, set(k,v){ try{localStorage.setItem(k,v)}catch(e){} } };
+const CRIT = [["tr","Task Achievement / Response","TA/TR"],["cc","Coherence & Cohesion","CC"],["lr","Lexical Resource","LR"],["gra","Grammatical Range & Accuracy","GRA"]];
+const hasScores = fb => fb && fb.tr!=null && fb.cc!=null && fb.lr!=null && fb.gra!=null;
+
+const cfg = window.APP_CONFIG || {};
+const configured = cfg.SUPABASE_URL && !/YOUR-/.test(cfg.SUPABASE_URL + cfg.SUPABASE_ANON_KEY);
+const sb = configured && window.supabase ? window.supabase.createClient(cfg.SUPABASE_URL, cfg.SUPABASE_ANON_KEY) : null;
+
+const S = { session:null, profile:null, essays:[], feedback:{}, loaded:false, view:"list", sel:null, filter:"all", q:"", gradingId:null, authMode:"login" };
+const isTeacher = () => S.profile?.role === "teacher";
+const uid = () => S.session?.user?.id;
+
+/* ---------- data ---------- */
+async function loadAll(){
+  const [e,f] = await Promise.all([
+    sb.from("essays").select("*").order("created_at",{ascending:false}),
+    sb.from("feedback").select("*")
+  ]);
+  if(!e.error) S.essays = e.data;
+  if(!f.error){ const m={}; f.data.forEach(r=>m[r.essay_id]=r); S.feedback=m; }
+  S.loaded = true; render();
+}
+let reloadTimer=null, channel=null;
+function scheduleReload(){ clearTimeout(reloadTimer); reloadTimer=setTimeout(loadAll,400); }
+async function onSession(session){
+  S.session = session;
+  if(!session){ S.profile=null; S.essays=[]; S.feedback={}; S.loaded=false; if(channel){ sb.removeChannel(channel); channel=null; } render(); return; }
+  const {data} = await sb.from("profiles").select("*").eq("id",session.user.id).maybeSingle();
+  S.profile = data || {id:session.user.id, full_name:session.user.user_metadata?.full_name||"", role:"student"};
+  render(); loadAll();
+  if(!channel){
+    channel = sb.channel("class")
+      .on("postgres_changes",{event:"*",schema:"public",table:"essays"},scheduleReload)
+      .on("postgres_changes",{event:"*",schema:"public",table:"feedback"},scheduleReload)
+      .subscribe();
+  }
+}
+async function boot(){
+  if(!sb){ $("#main").innerHTML=`<div class="card empty"><strong>Trang chưa được kết nối dữ liệu</strong>Giáo viên cần điền địa chỉ và khoá Supabase vào file <code>config.js</code> (xem README).</div>`; return; }
+  const {data} = await sb.auth.getSession();
+  await onSession(data.session);
+  sb.auth.onAuthStateChange((evt,session)=>{ if(evt==="SIGNED_IN"||evt==="SIGNED_OUT"||evt==="USER_UPDATED"){ if(session?.user?.id!==S.session?.user?.id) onSession(session); } });
+  document.addEventListener("visibilitychange",()=>{ if(!document.hidden && S.session) scheduleReload(); });
+}
+
+/* ---------- auth ---------- */
+function renderAuth(){
+  $("#nav").hidden = true; $("#who").innerHTML="";
+  const reg = S.authMode==="register";
+  $("#main").innerHTML = `
+  <form class="card form auth" id="authForm">
+    <div class="seg" role="group" aria-label="Đăng nhập hoặc đăng ký">
+      <button type="button" data-m="login" aria-pressed="${!reg}">Đăng nhập</button>
+      <button type="button" data-m="register" aria-pressed="${reg}">Đăng ký</button>
+    </div>
+    ${reg?`<label class="f" for="aName">Họ tên<small>Tên hiển thị cho cả lớp</small><input id="aName" required maxlength="80" autocomplete="name" placeholder="Nguyễn Minh Anh"></label>`:""}
+    <label class="f" for="aEmail">Email<input id="aEmail" type="email" required autocomplete="email" placeholder="ten@gmail.com"></label>
+    <label class="f" for="aPass">Mật khẩu${reg?"<small>Ít nhất 6 ký tự</small>":""}<input id="aPass" type="password" required minlength="6" autocomplete="${reg?"new-password":"current-password"}"></label>
+    <button class="btn primary" type="submit" id="aBtn">${reg?"Tạo tài khoản":"Đăng nhập"}</button>
+    <div id="aMsg"></div>
+  </form>`;
+  document.querySelectorAll("[data-m]").forEach(b=>b.onclick=()=>{ S.authMode=b.dataset.m; renderAuth(); });
+  $("#authForm").onsubmit = async ev=>{
+    ev.preventDefault(); const btn=$("#aBtn"), msg=$("#aMsg"); btn.disabled=true; msg.innerHTML="";
+    const email=$("#aEmail").value.trim(), password=$("#aPass").value;
+    try{
+      if(reg){
+        const full_name=$("#aName").value.trim();
+        const {data,error}=await sb.auth.signUp({email,password,options:{data:{full_name},emailRedirectTo:location.href.split("#")[0]}});
+        if(error) throw error;
+        if(!data.session){ msg.innerHTML='<div class="msg ok">Đã tạo tài khoản. Mở email để bấm link xác nhận, rồi quay lại đây đăng nhập.</div>'; btn.disabled=false; return; }
+      }else{
+        const {error}=await sb.auth.signInWithPassword({email,password});
+        if(error) throw error;
+      }
+    }catch(err){
+      btn.disabled=false;
+      const m=String(err?.message||"");
+      msg.innerHTML=`<div class="msg err">${
+        /Invalid login/i.test(m)?"Sai email hoặc mật khẩu.":
+        /not confirmed/i.test(m)?"Email chưa được xác nhận. Mở hộp thư và bấm link xác nhận trước.":
+        /already registered/i.test(m)?"Email này đã có tài khoản. Chuyển sang Đăng nhập.":
+        /rate limit/i.test(m)?"Thao tác quá nhiều lần. Đợi vài phút rồi thử lại.":
+        "Chưa thực hiện được: "+esc(m)}</div>`;
+    }
+  };
+}
+function renderWho(){
+  $("#who").innerHTML = `<span class="nm">${esc(S.profile?.full_name||S.session.user.email)}</span><span class="chip role">${isTeacher()?"Giáo viên":"Học sinh"}</span><button class="btn ghost" id="logout">Đăng xuất</button>`;
+  $("#logout").onclick = ()=>sb.auth.signOut();
+}
+
+/* ---------- views ---------- */
+function render(){
+  if(!sb) return;
+  if(!S.session) return renderAuth();
+  $("#nav").hidden=false; renderWho();
+  document.querySelectorAll("#nav button").forEach(b=>b.setAttribute("aria-current", String(b.dataset.v===S.view || (S.view==="detail"&&b.dataset.v==="list"))));
+  const pending = S.essays.filter(e=>!S.feedback[e.id]).length;
+  $("#pendingCount").textContent = isTeacher() && pending ? `· ${pending} chờ chấm` : "";
+  if(S.view==="submit") return renderSubmit();
+  if(S.view==="detail") return renderDetail();
+  renderList();
+}
+
+function renderList(){
+  const m=$("#main");
+  const keepQ = document.activeElement?.id==="q";
+  let items = S.essays;
+  if(S.filter==="wait") items=items.filter(e=>!S.feedback[e.id]);
+  if(S.filter==="done") items=items.filter(e=>S.feedback[e.id]);
+  if(S.filter==="mine") items=items.filter(e=>e.user_id===uid());
+  if(S.q){ const q=S.q.toLowerCase(); items=items.filter(e=>(e.student_name+" "+e.prompt).toLowerCase().includes(q)); }
+  const rows = items.map(e=>{
+    const fb=S.feedback[e.id];
+    return `<button class="row" data-open="${esc(e.id)}">
+      <div class="top"><span class="name">${esc(e.student_name)}</span><span class="chip task">Task ${e.task}</span>${e.user_id===uid()?'<span class="chip role">Bài của tôi</span>':""}</div>
+      <div class="prompt">${esc(e.prompt)}</div>
+      <div class="side">${fb?`${hasScores(fb)?`<span class="band">${fmtBand(fb.overall)}</span>`:""}<span class="chip done">Đã chấm${fb.pdf_path?" · PDF":""}</span>`:`<span class="chip wait">Chờ chấm</span>`}<span class="meta">${e.words} từ · ${fmtDate(e.created_at)}</span></div>
+    </button>`;}).join("");
+  m.innerHTML = `
+    <div class="toolbar">
+      <input id="q" type="search" placeholder="Tìm theo tên học sinh hoặc đề bài" value="${esc(S.q)}">
+      <select id="flt" aria-label="Lọc"><option value="all">Tất cả bài</option><option value="wait">Chờ chấm</option><option value="done">Đã chấm</option><option value="mine">Bài của tôi</option></select>
+      ${isTeacher()?`<button class="btn" id="dlAll" ${items.length?"":"disabled"}>Tải ${items.length} bài đang hiển thị (Word)</button>`:""}
+    </div>
+    <div id="dlMsg"></div>
+    ${!S.loaded?'<div class="list"><div class="empty">Đang tải bài viết…</div></div>'
+      : items.length?`<div class="list">${rows}</div>`
+      : `<div class="list"><div class="empty"><strong>${S.essays.length?"Không có bài nào khớp bộ lọc":"Lớp chưa có bài nào"}</strong>${S.essays.length?"Thử bỏ bớt điều kiện lọc.":"Bài nộp ở tab “Nộp bài” sẽ hiện ở đây cho cả lớp cùng xem."}</div></div>`}`;
+  $("#flt").value=S.filter;
+  $("#flt").onchange=e=>{S.filter=e.target.value;render();};
+  $("#dlAll")?.addEventListener("click",()=>downloadWord(items, `IELTS-Writing-${new Date().toISOString().slice(0,10)}-${items.length}-bai.docx`, $("#dlMsg")));
+  const qi=$("#q"); qi.oninput=e=>{S.q=e.target.value;render();};
+  if(keepQ){ qi.focus(); qi.setSelectionRange(qi.value.length,qi.value.length); }
+  m.querySelectorAll("[data-open]").forEach(b=>b.onclick=()=>{ S.sel=b.dataset.open; S.view="detail"; S.gradingId=null; render(); window.scrollTo(0,0); });
+}
+
+function renderSubmit(){
+  const m=$("#main");
+  if($("#essayForm")) return;
+  m.innerHTML = `
+  <form class="card form" id="essayForm">
+    <div class="grid2">
+      <label class="f" for="nm">Họ tên<small>Tên hiển thị cho cả lớp</small><input id="nm" required maxlength="80" value="${esc(S.profile?.full_name||"")}" placeholder="Nguyễn Minh Anh"></label>
+      <div class="f"><span style="font-weight:600;font-size:.9rem">Dạng bài</span>
+        <div class="seg">
+          <label><input type="radio" name="task" value="1" id="t1"> Task 1<small>tối thiểu 150 từ</small></label>
+          <label><input type="radio" name="task" value="2" id="t2" checked> Task 2<small>tối thiểu 250 từ</small></label>
+        </div></div>
+    </div>
+    <label class="f" for="pr">Đề bài<textarea id="pr" rows="3" required maxlength="3000" placeholder="Some people believe that university education should be free for everyone. To what extent do you agree or disagree?"></textarea></label>
+    <label class="f" for="tx">Bài viết<textarea id="tx" class="essay" required maxlength="20000" placeholder="Dán hoặc gõ bài viết của bạn tại đây…"></textarea></label>
+    <div class="actions"><button class="btn primary" type="submit" id="sendBtn">Nộp bài</button><span class="wc" id="wc">0 từ</span></div>
+    <div id="fmsg"></div>
+  </form>`;
+  const draft=store.get("ielts-draft"); if(draft){ try{ const d=JSON.parse(draft); $("#pr").value=d.p||""; $("#tx").value=d.t||""; if(d.k==="1") $("#t1").checked=true; }catch(e){} }
+  const upd=()=>{ const n=words($("#tx").value), min=$("#t1").checked?150:250; const el=$("#wc"); el.textContent=`${n} từ${n<min?` · còn thiếu ${min-n} từ so với yêu cầu`:""}`; el.className="wc"+(n<min?" low":""); store.set("ielts-draft",JSON.stringify({p:$("#pr").value,t:$("#tx").value,k:$("#t1").checked?"1":"2"})); };
+  ["#tx","#pr"].forEach(s=>$(s).addEventListener("input",upd)); document.querySelectorAll('[name=task]').forEach(r=>r.onchange=upd); upd();
+  $("#essayForm").onsubmit=async ev=>{
+    ev.preventDefault();
+    const btn=$("#sendBtn"), msg=$("#fmsg"); btn.disabled=true; msg.innerHTML="";
+    const name=$("#nm").value.trim(), body=$("#tx").value.trim(), prompt=$("#pr").value.trim(), task=$("#t1").checked?1:2;
+    if(name!==S.profile?.full_name){ const r=await sb.from("profiles").update({full_name:name}).eq("id",uid()); if(!r.error) S.profile.full_name=name; }
+    const {data,error}=await sb.from("essays").insert({student_name:name,task,prompt,body,words:words(body)}).select().single();
+    if(error){ btn.disabled=false; msg.innerHTML='<div class="msg err">Chưa gửi được bài. Kiểm tra mạng rồi bấm “Nộp bài” lần nữa; bài viết vẫn được giữ.</div>'; return; }
+    store.set("ielts-draft","");
+    S.essays=[data,...S.essays]; S.sel=data.id; S.view="detail"; render(); window.scrollTo(0,0);
+  };
+}
+
+function markEssay(text, corrections){
+  let html=esc(text);
+  (corrections||[]).forEach((c,i)=>{
+    const f=esc((c.from||"").trim()); if(!f) return;
+    const at=html.indexOf(f); if(at<0) return;
+    html=html.slice(0,at)+`<mark>${f}</mark><sup>${i+1}</sup>`+html.slice(at+f.length);
+  });
+  return html;
+}
+
+function pdfLink(fb){
+  return `<div class="file"><span class="chip done">PDF</span><a href="#" data-pdf="${esc(fb.pdf_path)}">${esc(fb.pdf_name||"bai-cham.pdf")}</a><span class="meta">${fmtSize(fb.pdf_size)}</span>${isTeacher()?'<button class="btn ghost" id="pdfDel">Gỡ file</button>':""}</div>`;
+}
+async function openPdf(path){
+  const w=window.open("","_blank");
+  const {data,error}=await sb.storage.from("graded").createSignedUrl(path,3600);
+  if(error||!data?.signedUrl){ if(w) w.close(); alert("Không mở được file PDF. Thử lại sau."); return; }
+  if(w) w.location=data.signedUrl; else location.href=data.signedUrl;
+}
+
+function renderDetail(){
+  const m=$("#main"); const id=S.sel;
+  const e=S.essays.find(x=>x.id===id);
+  if(!e){ m.innerHTML=`<button class="btn ghost back" id="bk">← Bài của lớp</button><div class="card empty">${S.loaded?"Bài viết này không còn nữa.":"Đang tải…"}</div>`; $("#bk").onclick=()=>{S.view="list";render();}; return; }
+  if(S.gradingId===id && $("#gradeForm")) return;
+  const fb=S.feedback[id]; const mine=e.user_id===uid(); const T=isTeacher();
+  const fbHtml = fb ? `
+    <div class="card fb">
+      <h3>Nhận xét của giáo viên</h3>
+      ${hasScores(fb)?`<div class="overall"><span class="band">${fmtBand(fb.overall)}</span><span class="small">Overall band · chấm ${fmtDate(fb.graded_at)}</span></div>
+      <div class="scores">${CRIT.map(([k,full,ab])=>`<div class="score" title="${full}"><b>${fb[k]??"–"}</b><span>${ab}</span></div>`).join("")}</div>`:`<p class="small" style="margin:0 0 12px">Chấm ${fmtDate(fb.graded_at)}</p>`}
+      ${fb.pdf_path&&!T?`<div class="pdfbox" style="margin-bottom:14px">${pdfLink(fb)}</div>`:""}
+      ${fb.comment?`<div class="label">Nhận xét chung</div><div class="comment">${esc(fb.comment)}</div>`:""}
+      ${(fb.corrections||[]).length?`<div class="label" style="margin-top:14px">Lỗi cần sửa</div><ol class="corr">${fb.corrections.map((c,i)=>`<li><span class="n">${i+1}</span><del>${esc(c.from)}</del> → <ins>${esc(c.to)}</ins>${c.note?`<span class="note">${esc(c.note)}</span>`:""}</li>`).join("")}</ol>`:""}
+      ${T?`<div class="actions" style="margin-top:16px"><button class="btn" id="editFb">Sửa nhận xét</button></div>`:""}
+    </div>` : `<div class="card"><span class="chip wait">Chờ chấm</span><p class="small" style="margin:10px 0 0">Giáo viên chưa chấm bài này. Điểm và nhận xét sẽ hiện ở đây cho cả lớp xem.</p></div>`;
+  m.innerHTML = `
+    <button class="btn ghost back" id="bk">← Bài của lớp</button>
+    <div class="detail">
+      <article class="card sheet">
+        <div class="actions" style="justify-content:space-between"><h2>${esc(e.student_name)}</h2><span class="chip task">Task ${e.task}</span></div>
+        <div class="meta">${e.words} từ · nộp ${fmtDate(e.created_at)}${e.words<(e.task==1?150:250)?` · <span style="color:var(--pen)">dưới số từ tối thiểu</span>`:""}</div>
+        <div class="q">${esc(e.prompt)}</div>
+        <div class="label">Bài viết</div>
+        <div class="text">${markEssay(e.body, fb?.corrections)}</div>
+        <div class="actions" style="margin-top:18px">${T?'<button class="btn" id="dlOne">Tải bài về (Word)</button>':""}${(mine&&!fb)||T?`<button class="btn ghost" id="delBtn">${T&&!mine?"Xoá bài":"Rút bài"}</button><span id="delConfirm"></span>`:""}</div><div id="dlMsg" style="margin-top:8px"></div>
+      </article>
+      <aside>${T?'<div id="pdfBox"></div>':""}<div id="fbSide">${T&&!hasScores(fb)?"":fbHtml}</div></aside>
+    </div>`;
+  $("#bk").onclick=()=>{S.view="list";S.gradingId=null;render();};
+  if(T && !hasScores(fb)) gradeForm(id, fb||null);
+  if(T) pdfBox(id);
+  m.querySelectorAll("[data-pdf]").forEach(a=>a.onclick=ev=>{ ev.preventDefault(); openPdf(a.dataset.pdf); });
+  $("#editFb")?.addEventListener("click",()=>gradeForm(id, fb));
+  $("#dlOne")?.addEventListener("click",()=>downloadWord([e], `${slug(e.student_name)}-Task${e.task}-${(e.created_at||"").slice(0,10)}.docx`, $("#dlMsg")));
+  $("#delBtn")?.addEventListener("click",()=>{
+    $("#delConfirm").innerHTML='<span class="small">Chắc chắn?</span> <button class="btn pen" id="delYes">Xoá</button> <button class="btn ghost" id="delNo">Huỷ</button>';
+    $("#delNo").onclick=()=>{$("#delConfirm").innerHTML="";};
+    $("#delYes").onclick=async()=>{
+      if(fb?.pdf_path) await sb.storage.from("graded").remove([fb.pdf_path]);
+      const {error}=await sb.from("essays").delete().eq("id",id);
+      if(error){ $("#delConfirm").innerHTML='<span class="msg err">Chưa xoá được. Thử lại sau.</span>'; return; }
+      S.essays=S.essays.filter(x=>x.id!==id); delete S.feedback[id]; S.view="list"; render();
+    };
+  });
+}
+
+function gradeForm(id, fb){
+  S.gradingId=id; const side=$("#fbSide"); let corr=(fb?.corrections||[]).map(c=>({...c}));
+  const opts=v=>`<option value="">–</option>`+[9,8,7,6,5,4,3,2,1,0].map(n=>`<option ${v!=null&&String(v)===String(n)?"selected":""}>${n}</option>`).join("");
+  side.innerHTML=`
+    <form class="card fb form gform" id="gradeForm">
+      <h3 style="margin:0">Chấm điểm trên web</h3>${fb?.pdf_path&&!hasScores(fb)?'<p class="small" style="margin:0">Đã có file PDF. Phần điểm dưới đây là tuỳ chọn.</p>':""}
+      <div class="grid2" style="grid-template-columns:repeat(2,minmax(0,1fr));gap:10px">
+        ${CRIT.map(([k,full,ab])=>`<label class="f" for="s_${k}">${ab}<small>${full}</small><select id="s_${k}">${opts(fb?.[k])}</select></label>`).join("")}
+      </div>
+      <div class="overall" style="margin:0"><span class="band" id="ov">${fmtBand(fb&&hasScores(fb)?fb.overall:null)}</span><span class="small">Overall = trung bình 4 tiêu chí, làm tròn 0.5</span></div>
+      <label class="f" for="cm">Nhận xét chung<textarea id="cm" rows="5" maxlength="5000" placeholder="Điểm mạnh, điểm cần cải thiện, gợi ý cho bài sau…">${esc(fb?.comment||"")}</textarea></label>
+      <div><div class="label">Lỗi cần sửa</div><div id="corrs" class="form" style="gap:12px"></div>
+        <button type="button" class="btn ghost" id="addC" style="padding-left:0">+ Thêm lỗi</button>
+        <p class="small" style="margin:4px 0 0">Chép đúng câu/cụm từ trong bài vào ô đầu tiên để nó được gạch dưới trong bài viết.</p></div>
+      <div class="actions"><button class="btn pen" type="submit" id="saveG">${hasScores(fb)?"Lưu thay đổi":"Gửi nhận xét"}</button>${hasScores(fb)?'<button type="button" class="btn ghost" id="cancelG">Huỷ</button>':""}</div>
+      <div id="gmsg"></div>
+    </form>`;
+  const drawC=()=>{ $("#corrs").innerHTML=corr.map((c,i)=>`<div class="crow" data-i="${i}">
+      <input id="cf${i}" data-f="from" placeholder="Viết sai" value="${esc(c.from)}"><input id="ct${i}" data-f="to" placeholder="Sửa thành" value="${esc(c.to)}">
+      <button type="button" class="btn ghost x" data-del="${i}" aria-label="Xoá lỗi ${i+1}">✕</button>
+      <textarea id="cn${i}" data-f="note" rows="1" placeholder="Giải thích (tuỳ chọn)">${esc(c.note||"")}</textarea></div>`).join("");
+    $("#corrs").querySelectorAll("[data-f]").forEach(el=>el.oninput=()=>{ corr[+el.closest(".crow").dataset.i][el.dataset.f]=el.value; });
+    $("#corrs").querySelectorAll("[data-del]").forEach(b=>b.onclick=()=>{ corr.splice(+b.dataset.del,1); drawC(); });
+  };
+  drawC();
+  $("#addC").onclick=()=>{ corr.push({from:"",to:"",note:""}); drawC(); $("#cf"+(corr.length-1)).focus(); };
+  const getS=()=>Object.fromEntries(CRIT.map(([k])=>[k,$("#s_"+k).value===""?null:Number($("#s_"+k).value)]));
+  side.querySelectorAll("select").forEach(s=>s.onchange=()=>{ $("#ov").textContent=fmtBand(overallBand(getS())); });
+  $("#cancelG")?.addEventListener("click",()=>{ S.gradingId=null; renderDetail(); });
+  $("#gradeForm").onsubmit=async ev=>{
+    ev.preventDefault(); const sc=getS(); const g=$("#gmsg");
+    if(Object.values(sc).some(v=>v==null)){ g.innerHTML='<div class="msg err">Chọn điểm cho cả 4 tiêu chí trước khi gửi.</div>'; return; }
+    $("#saveG").disabled=true;
+    const row={essay_id:id, ...sc, overall:overallBand(sc), comment:$("#cm").value.trim(),
+      corrections:corr.filter(c=>(c.from||"").trim()||(c.to||"").trim()).map(c=>({from:c.from.trim(),to:c.to.trim(),note:(c.note||"").trim()})),
+      graded_at:new Date().toISOString()};
+    const {data,error}=await sb.from("feedback").upsert(row,{onConflict:"essay_id"}).select().single();
+    if(error){ $("#saveG").disabled=false; g.innerHTML='<div class="msg err">Chưa lưu được. Kiểm tra tài khoản đã được đặt quyền giáo viên chưa, rồi thử lại.</div>'; return; }
+    S.feedback[id]=data; S.gradingId=null; renderDetail();
+  };
+}
+
+function pdfBox(id){
+  const box=$("#pdfBox"); if(!box) return; const fb=S.feedback[id];
+  box.innerHTML=`<div class="card pdfbox">
+    <div class="label" style="margin:0">Bài chấm dạng PDF</div>
+    ${fb?.pdf_path?pdfLink(fb):'<p class="small" style="margin:0">Tải bài về, chấm trên máy rồi tải file PDF lên. Học sinh trong lớp đều mở xem được.</p>'}
+    <div class="actions"><label class="btn ${fb?.pdf_path?"":"pen"}" for="pdfIn" tabindex="0">${fb?.pdf_path?"Thay file PDF khác":"Tải lên PDF đã chấm"}</label><input type="file" id="pdfIn" accept="application/pdf,.pdf" hidden></div>
+    <div id="pdfMsg"></div></div>`;
+  box.querySelectorAll("[data-pdf]").forEach(a=>a.onclick=ev=>{ ev.preventDefault(); openPdf(a.dataset.pdf); });
+  const lab=box.querySelector('label[for="pdfIn"]'); lab.onkeydown=ev=>{ if(ev.key==="Enter"||ev.key===" "){ ev.preventDefault(); $("#pdfIn").click(); } };
+  $("#pdfIn").onchange=async ev=>{
+    const f=ev.target.files[0]; if(!f) return; const msg=$("#pdfMsg");
+    if(!/pdf$/i.test(f.type)&&!/\.pdf$/i.test(f.name)){ msg.innerHTML='<div class="msg err">Chỉ nhận file PDF.</div>'; return; }
+    if(f.size>20*1048576){ msg.innerHTML='<div class="msg err">File lớn hơn 20 MB. Hãy nén PDF rồi tải lại.</div>'; return; }
+    msg.innerHTML='<span class="small">Đang tải lên…</span>';
+    const path=`${id}/${Date.now()}.pdf`;
+    const up=await sb.storage.from("graded").upload(path,f,{contentType:"application/pdf",upsert:false});
+    if(up.error){ msg.innerHTML='<div class="msg err">Chưa tải lên được. Kiểm tra quyền giáo viên rồi thử lại.</div>'; return; }
+    const old=S.feedback[id];
+    const {data,error}=await sb.from("feedback").upsert({essay_id:id,pdf_path:path,pdf_name:f.name,pdf_size:f.size,...(old?{}:{graded_at:new Date().toISOString()})},{onConflict:"essay_id"}).select().single();
+    if(error){ await sb.storage.from("graded").remove([path]); msg.innerHTML='<div class="msg err">Chưa lưu được file. Thử lại sau.</div>'; return; }
+    if(old?.pdf_path) await sb.storage.from("graded").remove([old.pdf_path]);
+    S.feedback[id]=data; S.gradingId=null; renderDetail();
+  };
+  $("#pdfDel")?.addEventListener("click",async()=>{
+    const old=S.feedback[id]; if(!old?.pdf_path) return;
+    const r = hasScores(old) || old.comment
+      ? await sb.from("feedback").update({pdf_path:null,pdf_name:null,pdf_size:null}).eq("essay_id",id).select().single()
+      : await sb.from("feedback").delete().eq("essay_id",id);
+    if(r.error){ $("#pdfMsg").innerHTML='<div class="msg err">Chưa gỡ được file. Thử lại sau.</div>'; return; }
+    await sb.storage.from("graded").remove([old.pdf_path]);
+    if(r.data) S.feedback[id]=r.data; else delete S.feedback[id];
+    S.gradingId=null; renderDetail();
+  });
+}
+
+async function downloadWord(list, filename, msgEl){
+  const say=h=>{ if(msgEl) msgEl.innerHTML=h; };
+  if(!window.docx){ say('<div class="msg err">Chưa tải được công cụ tạo file Word. Tải lại trang rồi thử lại.</div>'); return; }
+  const {Document,Packer,Paragraph,TextRun,HeadingLevel,Header,Footer,AlignmentType,PageBreak}=window.docx;
+  const children=[];
+  list.forEach((e,i)=>{
+    if(i) children.push(new Paragraph({children:[new PageBreak()]}));
+    children.push(new Paragraph({heading:HeadingLevel.HEADING_1,children:[new TextRun(e.student_name||"Học sinh")]}));
+    children.push(new Paragraph({children:[new TextRun({text:`IELTS Writing Task ${e.task} · ${e.words} từ · nộp ${fmtDate(e.created_at)}`,color:"5B6579",size:20})]}));
+    children.push(new Paragraph({spacing:{before:200,after:120},children:[new TextRun({text:"Đề bài",bold:true})]}));
+    (e.prompt||"").split(/\n+/).forEach(t=>children.push(new Paragraph({children:[new TextRun({text:t,italics:true})]})));
+    children.push(new Paragraph({spacing:{before:240,after:120},children:[new TextRun({text:"Bài viết",bold:true})]}));
+    (e.body||"").split(/\n+/).filter(t=>t.trim()).forEach(t=>children.push(new Paragraph({spacing:{after:160,line:360},children:[new TextRun({text:t,size:24,font:"Times New Roman"})]})));
+  });
+  const doc=new Document({sections:[{
+    headers:{default:new Header({children:[new Paragraph({alignment:AlignmentType.RIGHT,children:[new TextRun({text:"Ms Trâm English Hub · Lớp IELTS Writing | IELTS SPEEDING-UP",size:16,color:"0B5D8F"})]})]})},
+    footers:{default:new Footer({children:[new Paragraph({alignment:AlignmentType.CENTER,children:[new TextRun({text:"Zalo/HP: 079 29 51 529 | 0898 123 696 · 12 Lê Đình Chinh, Quy Nhơn Nam",size:16,color:"5B6579"})]})]})},
+    children}]});
+  say('<span class="small">Đang tạo file…</span>');
+  try{
+    const blob=await Packer.toBlob(doc);
+    const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download=filename; document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(()=>URL.revokeObjectURL(a.href),5000);
+    say('<div class="msg ok">Đã tải file Word về máy.</div>');
+  }catch(err){ say('<div class="msg err">Chưa tạo được file. Thử lại sau ít phút.</div>'); }
+}
+
+document.querySelectorAll("#nav button").forEach(b=>b.onclick=()=>{ S.view=b.dataset.v; S.gradingId=null; render(); });
+boot();
+</script>
+</body>
+</html>

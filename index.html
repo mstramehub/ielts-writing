@@ -143,6 +143,30 @@ textarea.essay{font-family:var(--f-read);font-size:1rem;line-height:1.7;min-heig
 .auth .seg button[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft);color:var(--accent)}
 .who .btn{padding:5px 10px;font-size:.8rem}
 .who .nm{color:var(--ink);font-weight:600}
+.classbar{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;margin:-4px 0 14px;padding:10px 12px;background:var(--surface);border:1px solid var(--line);border-radius:10px}
+.classbar label{font-size:.78rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.classbar select{border:1px solid var(--line);background:var(--bg);border-radius:8px;padding:7px 10px;font-weight:600;max-width:100%;min-width:0}
+.classbar .cur{font-weight:700}
+.classbar .grow{flex:1}
+.classbar .btn{padding:6px 12px;font-size:.85rem}
+.joinrow{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.codein{border:1px solid var(--line);background:var(--bg);border-radius:8px;padding:9px 12px;font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:1.05rem;letter-spacing:.12em;text-transform:uppercase;width:12ch;min-width:0}
+.join{max-width:460px;margin:24px auto 0}
+.code{font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:1.35rem;font-weight:700;letter-spacing:.14em;color:var(--accent);background:var(--accent-soft);padding:4px 12px;border-radius:8px;user-select:all}
+.mgr{display:flex;flex-direction:column;gap:16px}
+.cls{display:flex;flex-direction:column;gap:12px}
+.cls .hd{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;justify-content:space-between}
+.cls h3{margin:0;font-size:1.1rem;min-width:0;overflow-wrap:anywhere}
+.cls .codeline{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center}
+.stats{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:.88rem;color:var(--muted);font-variant-numeric:tabular-nums}
+.stats b{color:var(--ink)}
+.share{background:var(--bg);border-radius:8px;padding:10px 12px;font-size:.88rem;white-space:pre-wrap;overflow-wrap:anywhere}
+.roster{overflow-x:auto}
+.roster table{width:100%;border-collapse:collapse;font-size:.88rem}
+.roster th,.roster td{text-align:left;padding:8px 10px;border-top:1px solid var(--line);white-space:nowrap}
+.roster th{font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);border-top:0}
+.roster td.num{font-variant-numeric:tabular-nums;text-align:right}
+.danger,.btn.danger{color:var(--pen)}
 </style>
 </head>
 <body>
@@ -151,11 +175,13 @@ textarea.essay{font-family:var(--f-read);font-size:1rem;line-height:1.7;min-heig
     <div class="brand"><img src="logo-mark.png" alt="Ms Trâm English Hub"><div><div class="bn">Ms Trâm</div><div class="bs">english hub</div></div></div>
     <div class="who" id="who"></div>
   </header>
-  <div class="classhead"><h1>LỚP IELTS Writing<span class="sep">|</span><span class="su">IELTS SPEEDING-UP</span></h1><span class="tagline">Tiếng Anh cho mọi lứa tuổi</span></div>
+  <div class="classhead"><h1 id="classTitle">LỚP IELTS Writing<span class="sep">|</span><span class="su">IELTS SPEEDING-UP</span></h1><span class="tagline">Tiếng Anh cho mọi lứa tuổi</span></div>
   <div class="contact"><span>Zalo/HP: <b>079 29 51 529</b> · <b>0898 123 696</b></span><span>12 Lê Đình Chinh, Quy Nhơn Nam</span><a href="https://zalo.me/0792951529" target="_blank" rel="noopener">Nhắn Zalo</a></div>
+  <div class="classbar" id="classbar" hidden></div>
   <nav id="nav" hidden>
     <button data-v="list" aria-current="true">Bài của lớp<span class="count" id="pendingCount"></span></button>
     <button data-v="submit">Nộp bài</button>
+    <button data-v="classes" id="navClasses" hidden>Quản lý lớp</button>
   </nav>
   <main id="main"><div class="card empty">Đang tải…</div></main>
   <footer>
@@ -188,18 +214,51 @@ const cfg = window.APP_CONFIG || {};
 const configured = cfg.SUPABASE_URL && !/YOUR-/.test(cfg.SUPABASE_URL + cfg.SUPABASE_ANON_KEY);
 const sb = configured && window.supabase ? window.supabase.createClient(cfg.SUPABASE_URL, cfg.SUPABASE_ANON_KEY) : null;
 
-const S = { session:null, profile:null, essays:[], feedback:{}, loaded:false, view:"list", sel:null, filter:"all", q:"", gradingId:null, authMode:"login" };
+const S = { classes:[], classId:null, stats:{}, classesLoaded:false, joinOpen:false, session:null, profile:null, essays:[], feedback:{}, loaded:false, view:"list", sel:null, filter:"all", q:"", gradingId:null, authMode:"login" };
 const isTeacher = () => S.profile?.role === "teacher";
 const uid = () => S.session?.user?.id;
+const curClass = () => S.classes.find(c=>c.id===S.classId) || null;
+const CODE_CHARS = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+const randomCode = () => Array.from({length:6},()=>CODE_CHARS[Math.floor(Math.random()*CODE_CHARS.length)]).join("");
+const SITE_URL = location.href.split("#")[0].split("?")[0];
+async function copyText(t, btn){
+  try{ await navigator.clipboard.writeText(t); if(btn){ const o=btn.textContent; btn.textContent="Đã sao chép"; setTimeout(()=>btn.textContent=o,1500); } }
+  catch(e){ prompt("Sao chép nội dung dưới đây:", t); }
+}
 
 /* ---------- data ---------- */
+async function loadClasses(){
+  const {data,error} = await sb.from("classes").select("*").order("created_at");
+  if(error){ S.loadError=error.message; }
+  S.classes = data||[]; S.classesLoaded = true;
+  if(!S.classes.some(c=>c.id===S.classId)){
+    const saved = store.get("ielts-class-"+uid());
+    S.classId = S.classes.some(c=>c.id===saved) ? saved : (S.classes[0]?.id||null);
+  }
+  if(isTeacher()) await loadStats();
+}
+async function loadStats(){
+  const {data} = await sb.rpc("class_stats");
+  const m={}; (data||[]).forEach(r=>m[r.class_id]=r); S.stats=m;
+}
+function selectClass(id){
+  if(id===S.classId) return;
+  S.classId=id; store.set("ielts-class-"+uid(), id);
+  S.essays=[]; S.feedback={}; S.loaded=false; S.sel=null; S.gradingId=null;
+  if(S.view==="detail") S.view="list";
+  render(); loadAll();
+}
 async function loadAll(){
+  const cid = S.classId;
+  if(!cid){ S.essays=[]; S.feedback={}; S.loaded=true; render(); return; }
   const [e,f] = await Promise.all([
-    sb.from("essays").select("*").order("created_at",{ascending:false}),
-    sb.from("feedback").select("*")
+    sb.from("essays").select("*").eq("class_id",cid).order("created_at",{ascending:false}),
+    sb.from("feedback").select("*, essays!inner(class_id)").eq("essays.class_id",cid)
   ]);
+  if(cid!==S.classId) return; // đã chuyển lớp trong lúc tải
   if(!e.error) S.essays = e.data;
-  if(!f.error){ const m={}; f.data.forEach(r=>m[r.essay_id]=r); S.feedback=m; }
+  if(!f.error){ const m={}; f.data.forEach(r=>{ delete r.essays; m[r.essay_id]=r; }); S.feedback=m; }
+  if(isTeacher()) loadStats().then(()=>{ if(S.view==="classes") updateStatsInPlace(); });
   S.loadError = e.error||f.error ? (e.error||f.error).message : null;
   S.loaded = true; render();
 }
@@ -207,10 +266,10 @@ let reloadTimer=null, channel=null;
 function scheduleReload(){ clearTimeout(reloadTimer); reloadTimer=setTimeout(loadAll,400); }
 async function onSession(session){
   S.session = session;
-  if(!session){ S.profile=null; S.essays=[]; S.feedback={}; S.loaded=false; if(channel){ sb.removeChannel(channel); channel=null; } render(); return; }
+  if(!session){ S.profile=null; S.essays=[]; S.feedback={}; S.loaded=false; S.classes=[]; S.classId=null; S.classesLoaded=false; S.stats={}; S.view="list"; if(channel){ sb.removeChannel(channel); channel=null; } render(); return; }
   const {data} = await sb.from("profiles").select("*").eq("id",session.user.id).maybeSingle();
   S.profile = data || {id:session.user.id, full_name:session.user.user_metadata?.full_name||"", role:"student"};
-  render(); loadAll();
+  render(); await loadClasses(); render(); loadAll();
   if(!channel){
     channel = sb.channel("class")
       .on("postgres_changes",{event:"*",schema:"public",table:"essays"},scheduleReload)
@@ -278,15 +337,66 @@ function renderWho(){
 }
 
 /* ---------- views ---------- */
+function renderClassHead(){
+  const name = curClass()?.name || "LỚP IELTS Writing | IELTS SPEEDING-UP";
+  const i = name.indexOf("|");
+  $("#classTitle").innerHTML = i<0 ? esc(name) : `${esc(name.slice(0,i).trim())}<span class="sep">|</span><span class="su">${esc(name.slice(i+1).trim())}</span>`;
+}
+function renderClassBar(){
+  const bar=$("#classbar");
+  if(!S.session || !S.classes.length){ bar.hidden=true; return; }
+  if(bar.contains(document.activeElement) && document.activeElement.tagName==="INPUT") return;
+  bar.hidden=false;
+  const many=S.classes.length>1;
+  bar.innerHTML = `<label for="classSel">Lớp</label>
+    ${many?`<select id="classSel">${S.classes.map(c=>`<option value="${esc(c.id)}" ${c.id===S.classId?"selected":""}>${esc(c.name)}</option>`).join("")}</select>`:`<span class="cur">${esc(curClass()?.name||"")}</span>`}
+    <span class="grow"></span>
+    ${isTeacher()?"":(S.joinOpen
+      ? `<form class="joinrow" id="joinMini"><input id="joinMiniCode" class="codein" placeholder="MÃ LỚP" maxlength="20" autocomplete="off" aria-label="Mã lớp"><button class="btn primary" type="submit">Vào lớp</button><button class="btn ghost" type="button" id="joinMiniX">Huỷ</button><span id="joinMiniMsg"></span></form>`
+      : `<button class="btn ghost" id="joinMore">+ Tham gia lớp khác</button>`)}`;
+  $("#classSel")?.addEventListener("change",e=>selectClass(e.target.value));
+  $("#joinMore")?.addEventListener("click",()=>{ S.joinOpen=true; renderClassBar(); $("#joinMiniCode").focus(); });
+  $("#joinMiniX")?.addEventListener("click",()=>{ S.joinOpen=false; renderClassBar(); });
+  $("#joinMini")?.addEventListener("submit",ev=>{ ev.preventDefault(); doJoin($("#joinMiniCode").value, $("#joinMiniMsg"), ()=>{ S.joinOpen=false; }); });
+}
+async function doJoin(code, msgEl, after){
+  code=(code||"").trim().toUpperCase();
+  if(!code){ msgEl.innerHTML='<span class="msg err">Nhập mã lớp cô gửi.</span>'; return; }
+  msgEl.innerHTML='<span class="small">Đang kiểm tra…</span>';
+  const {data,error}=await sb.rpc("join_class",{p_code:code});
+  if(error){ msgEl.innerHTML=`<span class="msg err">${/invalid_code/.test(error.message)?"Mã lớp không đúng. Kiểm tra lại với cô.":"Chưa vào được lớp"+errText(error)}</span>`; return; }
+  if(after) after();
+  await loadClasses(); selectClass(data.id); S.view="list"; render();
+}
+function renderJoin(){
+  $("#nav").hidden=true; $("#classbar").hidden=true;
+  if($("#joinForm")) return;
+  $("#main").innerHTML=`
+  <form class="card form join" id="joinForm">
+    <div><h2 style="margin:0 0 4px;font-size:1.15rem">Nhập mã lớp</h2>
+    <p class="small" style="margin:0">Cô Trâm gửi mã lớp qua Zalo. Nhập mã để vào lớp, xem bài và nộp bài.</p></div>
+    <div class="joinrow"><input id="joinCode" class="codein" placeholder="VD: TRAM65" maxlength="20" autocomplete="off" aria-label="Mã lớp" style="flex:1"><button class="btn primary" type="submit">Vào lớp</button></div>
+    <div id="joinMsg"></div>
+  </form>`;
+  $("#joinCode").focus();
+  $("#joinForm").onsubmit=ev=>{ ev.preventDefault(); doJoin($("#joinCode").value, $("#joinMsg")); };
+}
+
 function render(){
   if(!sb) return;
-  if(!S.session) return renderAuth();
-  $("#nav").hidden=false; renderWho();
+  if(!S.session){ $("#classbar").hidden=true; renderClassHead(); return renderAuth(); }
+  renderWho(); renderClassHead();
+  if(!S.classesLoaded){ $("#nav").hidden=true; $("#main").innerHTML='<div class="card empty">Đang tải lớp học…</div>'; return; }
+  if(!isTeacher() && !S.classes.length) return renderJoin();
+  $("#nav").hidden=false; $("#navClasses").hidden=!isTeacher();
+  renderClassBar();
+  if(isTeacher() && !S.classes.length) S.view="classes";
   document.querySelectorAll("#nav button").forEach(b=>b.setAttribute("aria-current", String(b.dataset.v===S.view || (S.view==="detail"&&b.dataset.v==="list"))));
   const pending = S.essays.filter(e=>!S.feedback[e.id]).length;
   $("#pendingCount").textContent = isTeacher() && pending ? `· ${pending} chờ chấm` : "";
   if(S.view==="submit") return renderSubmit();
   if(S.view==="detail") return renderDetail();
+  if(S.view==="classes") return renderClasses();
   renderList();
 }
 
@@ -317,7 +427,7 @@ function renderList(){
       : `<div class="list"><div class="empty"><strong>${S.essays.length?"Không có bài nào khớp bộ lọc":"Lớp chưa có bài nào"}</strong>${S.essays.length?"Thử bỏ bớt điều kiện lọc.":"Bài nộp ở tab “Nộp bài” sẽ hiện ở đây cho cả lớp cùng xem."}</div></div>`}`;
   $("#flt").value=S.filter;
   $("#flt").onchange=e=>{S.filter=e.target.value;render();};
-  $("#dlAll")?.addEventListener("click",()=>downloadWord(items, `IELTS-Writing-${new Date().toISOString().slice(0,10)}-${items.length}-bai.docx`, $("#dlMsg")));
+  $("#dlAll")?.addEventListener("click",()=>downloadWord(items, `${slug(curClass()?.name||"IELTS-Writing")}-${new Date().toISOString().slice(0,10)}-${items.length}-bai.docx`, $("#dlMsg")));
   const qi=$("#q"); qi.oninput=e=>{S.q=e.target.value;render();};
   if(keepQ){ qi.focus(); qi.setSelectionRange(qi.value.length,qi.value.length); }
   m.querySelectorAll("[data-open]").forEach(b=>b.onclick=()=>{ S.sel=b.dataset.open; S.view="detail"; S.gradingId=null; render(); window.scrollTo(0,0); });
@@ -325,9 +435,10 @@ function renderList(){
 
 function renderSubmit(){
   const m=$("#main");
-  if($("#essayForm")) return;
+  if($("#essayForm")){ $("#subClass").textContent=curClass()?.name||""; return; }
   m.innerHTML = `
   <form class="card form" id="essayForm">
+    <p class="small" style="margin:0">Nộp vào lớp: <b id="subClass" style="color:var(--ink)">${esc(curClass()?.name||"")}</b></p>
     <div class="grid2">
       <label class="f" for="nm">Họ tên<small>Tên hiển thị cho cả lớp</small><input id="nm" required maxlength="80" value="${esc(S.profile?.full_name||"")}" placeholder="Nguyễn Minh Anh"></label>
       <div class="f"><span style="font-weight:600;font-size:.9rem">Dạng bài</span>
@@ -364,7 +475,7 @@ function renderSubmit(){
       fileRow={file_path:path,file_name:file.name,file_size:file.size};
     }
     if(name!==S.profile?.full_name){ const r=await sb.from("profiles").update({full_name:name}).eq("id",uid()); if(!r.error) S.profile.full_name=name; }
-    const {data,error}=await sb.from("essays").insert({student_name:name,task,prompt,body,words:words(body),...fileRow}).select().single();
+    const {data,error}=await sb.from("essays").insert({student_name:name,task,prompt,body,words:words(body),class_id:S.classId,...fileRow}).select().single();
     if(error){ if(fileRow.file_path) await sb.storage.from("submissions").remove([fileRow.file_path]); btn.disabled=false; msg.innerHTML=`<div class="msg err">Chưa gửi được bài${errText(error)}. Bấm “Nộp bài” lần nữa; bài viết vẫn được giữ.</div>`; return; }
     store.set("ielts-draft","");
     S.essays=[data,...S.essays]; S.sel=data.id; S.view="detail"; render(); window.scrollTo(0,0);
@@ -559,7 +670,7 @@ async function downloadWord(list, filename, msgEl){
     (e.body||"").split(/\n+/).filter(t=>t.trim()).forEach(t=>children.push(new Paragraph({spacing:{after:160,line:360},children:[new TextRun({text:t,size:24,font:"Times New Roman"})]})));
   });
   const doc=new Document({sections:[{
-    headers:{default:new Header({children:[new Paragraph({alignment:AlignmentType.RIGHT,children:[new TextRun({text:"Ms Trâm English Hub · Lớp IELTS Writing | IELTS SPEEDING-UP",size:16,color:"0B5D8F"})]})]})},
+    headers:{default:new Header({children:[new Paragraph({alignment:AlignmentType.RIGHT,children:[new TextRun({text:"Ms Trâm English Hub · "+(curClass()?.name||"Lớp IELTS Writing"),size:16,color:"0B5D8F"})]})]})},
     footers:{default:new Footer({children:[new Paragraph({alignment:AlignmentType.CENTER,children:[new TextRun({text:"Zalo/HP: 079 29 51 529 | 0898 123 696 · 12 Lê Đình Chinh, Quy Nhơn Nam",size:16,color:"5B6579"})]})]})},
     children}]});
   say('<span class="small">Đang tạo file…</span>');
@@ -571,7 +682,131 @@ async function downloadWord(list, filename, msgEl){
   }catch(err){ say('<div class="msg err">Chưa tạo được file. Thử lại sau ít phút.</div>'); }
 }
 
-document.querySelectorAll("#nav button").forEach(b=>b.onclick=()=>{ S.view=b.dataset.v; S.gradingId=null; render(); });
+
+/* ---------- quản lý lớp (giáo viên) ---------- */
+function shareText(c){
+  return `Chào các em, cô mở lớp ${c.name} trên web nộp bài IELTS Writing.\n1. Vào: ${SITE_URL}\n2. Bấm Đăng ký (dùng họ tên thật), hoặc Đăng nhập nếu đã có tài khoản.\n3. Nhập mã lớp: ${c.code}`;
+}
+function updateStatsInPlace(){
+  S.classes.forEach(c=>{ const el=document.querySelector(`[data-stats="${c.id}"]`); if(el) el.innerHTML=statsHtml(c.id); });
+}
+function statsHtml(id){
+  const st=S.stats[id]||{};
+  return `<span><b>${st.students??"–"}</b> học sinh</span><span><b>${st.essays??"–"}</b> bài</span><span><b class="${st.pending?"danger":""}">${st.pending??"–"}</b> chờ chấm</span>`;
+}
+function renderClasses(force){
+  const m=$("#main");
+  if(!force && $("#classMgr")){ updateStatsInPlace(); return; }
+  m.innerHTML=`<div class="mgr" id="classMgr">
+    <form class="card form" id="newClass">
+      <h3 style="margin:0;font-size:1rem">Tạo lớp mới</h3>
+      <div class="joinrow"><input id="ncName" required maxlength="120" placeholder="VD: IELTS Writing | Lớp 6.5+ tối T3-T5" style="flex:1;min-width:0;border:1px solid var(--line);background:var(--bg);border-radius:8px;padding:9px 12px"><button class="btn primary" type="submit">Tạo lớp</button></div>
+      <p class="small" style="margin:0">Dấu “|” chia tên lớp thành hai phần trên tiêu đề, giống “LỚP IELTS Writing | IELTS SPEEDING-UP”. Mã lớp được tạo tự động, đổi được sau.</p>
+      <div id="ncMsg"></div>
+    </form>
+    ${S.classes.map(c=>`
+    <section class="card cls" data-cls="${esc(c.id)}">
+      <div class="hd"><h3>${esc(c.name)}</h3>${c.id===S.classId?'<span class="chip done">Đang mở</span>':`<button class="btn" data-act="open">Mở lớp này</button>`}</div>
+      <div class="stats" data-stats="${esc(c.id)}">${statsHtml(c.id)}</div>
+      <div class="codeline"><span class="small">Mã lớp</span><span class="code">${esc(c.code)}</span>
+        <button class="btn" data-act="copycode">Sao chép mã</button>
+        <button class="btn" data-act="copyshare">Sao chép tin nhắn mời</button></div>
+      <div class="share">${esc(shareText(c))}</div>
+      <div class="actions">
+        <button class="btn ghost" data-act="roster">Xem danh sách học sinh</button>
+        <button class="btn ghost" data-act="rename">Đổi tên</button>
+        <button class="btn ghost" data-act="recode">Đổi mã</button>
+        <button class="btn ghost danger" data-act="delete">Xoá lớp</button>
+      </div>
+      <div data-slot></div>
+    </section>`).join("")}
+  </div>`;
+  $("#newClass").onsubmit=async ev=>{
+    ev.preventDefault(); const name=$("#ncName").value.trim(); if(!name) return;
+    $("#ncMsg").innerHTML='<span class="small">Đang tạo…</span>';
+    let r=await sb.from("classes").insert({name,code:randomCode()}).select().single();
+    if(r.error?.code==="23505") r=await sb.from("classes").insert({name,code:randomCode()}).select().single();
+    if(r.error){ $("#ncMsg").innerHTML=`<div class="msg err">Chưa tạo được lớp${errText(r.error)}</div>`; return; }
+    await loadClasses(); renderClassBar(); renderClasses(true);
+    document.querySelector(`[data-cls="${r.data.id}"]`)?.scrollIntoView({behavior:"smooth",block:"center"});
+  };
+  m.querySelectorAll("[data-cls]").forEach(sec=>{
+    const id=sec.dataset.cls, c=S.classes.find(x=>x.id===id), slot=sec.querySelector("[data-slot]");
+    sec.querySelectorAll("[data-act]").forEach(b=>b.onclick=()=>classAction(b.dataset.act, c, slot, b));
+  });
+}
+async function classAction(act, c, slot, btn){
+  if(act==="open"){ selectClass(c.id); S.view="list"; render(); window.scrollTo(0,0); return; }
+  if(act==="copycode") return copyText(c.code, btn);
+  if(act==="copyshare") return copyText(shareText(c), btn);
+  if(act==="rename"){
+    slot.innerHTML=`<form class="joinrow" data-f><input value="${esc(c.name)}" maxlength="120" required style="flex:1;min-width:0;border:1px solid var(--line);background:var(--bg);border-radius:8px;padding:9px 12px" aria-label="Tên lớp mới"><button class="btn primary">Lưu tên</button><button type="button" class="btn ghost" data-x>Huỷ</button><span data-m></span></form>`;
+    const f=slot.querySelector("[data-f]"); f.querySelector("input").focus();
+    f.querySelector("[data-x]").onclick=()=>slot.innerHTML="";
+    f.onsubmit=async ev=>{ ev.preventDefault(); const name=f.querySelector("input").value.trim();
+      const {error}=await sb.from("classes").update({name}).eq("id",c.id);
+      if(error){ f.querySelector("[data-m]").innerHTML=`<span class="msg err">Chưa lưu được${errText(error)}</span>`; return; }
+      await loadClasses(); renderClassHead(); renderClassBar(); renderClasses(true); };
+    return;
+  }
+  if(act==="recode"){
+    slot.innerHTML=`<form class="joinrow" data-f><input class="codein" value="${randomCode()}" maxlength="20" required aria-label="Mã lớp mới"><button class="btn primary">Lưu mã mới</button><button type="button" class="btn ghost" data-x>Huỷ</button><span data-m></span>
+      <p class="small" style="margin:0;flex-basis:100%">Gõ mã tuỳ ý (4–20 ký tự, chữ không dấu, số, dấu -) hoặc giữ mã ngẫu nhiên. Mã cũ sẽ hết dùng được; học sinh đã vào lớp không bị ảnh hưởng.</p></form>`;
+    const f=slot.querySelector("[data-f]"); const inp=f.querySelector("input"); inp.select();
+    f.querySelector("[data-x]").onclick=()=>slot.innerHTML="";
+    f.onsubmit=async ev=>{ ev.preventDefault(); const code=inp.value.trim().toUpperCase(); const mm=f.querySelector("[data-m]");
+      if(!/^[A-Z0-9-]{4,20}$/.test(code)){ mm.innerHTML='<span class="msg err">Mã gồm 4–20 ký tự: chữ không dấu, số hoặc dấu -.</span>'; return; }
+      const {error}=await sb.from("classes").update({code}).eq("id",c.id);
+      if(error){ mm.innerHTML=`<span class="msg err">${error.code==="23505"?"Mã này đã được lớp khác dùng.":"Chưa lưu được"+errText(error)}</span>`; return; }
+      await loadClasses(); renderClasses(true); };
+    return;
+  }
+  if(act==="roster"){
+    slot.innerHTML='<p class="small">Đang tải danh sách…</p>';
+    const {data,error}=await sb.rpc("class_roster",{p_class:c.id});
+    if(error){ slot.innerHTML=`<div class="msg err">Không tải được danh sách${errText(error)}</div>`; return; }
+    if(!data.length){ slot.innerHTML='<p class="small">Chưa có học sinh nào. Gửi mã lớp cho học sinh để các em tham gia.</p>'; return; }
+    slot.innerHTML=`<div class="roster"><table><thead><tr><th>Học sinh</th><th>Email</th><th style="text-align:right">Số bài</th><th>Ngày vào lớp</th><th></th></tr></thead><tbody>
+      ${data.map(r=>`<tr data-u="${esc(r.user_id)}"><td>${esc(r.full_name||"(chưa có tên)")}</td><td>${esc(r.email)}</td><td class="num">${r.essays}</td><td>${fmtDate(r.joined_at)}</td><td><button class="btn ghost danger" data-rm>Xoá khỏi lớp</button></td></tr>`).join("")}
+      </tbody></table></div><button class="btn ghost" data-x style="margin-top:6px">Ẩn danh sách</button>`;
+    slot.querySelector("[data-x]").onclick=()=>slot.innerHTML="";
+    slot.querySelectorAll("[data-rm]").forEach(b=>b.onclick=()=>{
+      const td=b.parentElement, u=b.closest("tr").dataset.u;
+      td.innerHTML='<button class="btn pen" data-y>Xoá</button> <button class="btn ghost" data-n>Huỷ</button>';
+      td.querySelector("[data-n]").onclick=()=>classAction("roster",c,slot);
+      td.querySelector("[data-y]").onclick=async()=>{
+        const {error}=await sb.from("class_members").delete().eq("class_id",c.id).eq("user_id",u);
+        if(error){ td.innerHTML=`<span class="msg err">Lỗi${errText(error)}</span>`; return; }
+        await loadStats(); updateStatsInPlace(); classAction("roster",c,slot);
+      };
+    });
+    return;
+  }
+  if(act==="delete"){
+    const st=S.stats[c.id]||{};
+    slot.innerHTML=`<div class="msg err" style="display:flex;flex-direction:column;gap:10px">
+      <span>Xoá lớp <b>${esc(c.name)}</b> sẽ xoá vĩnh viễn ${st.essays??0} bài, toàn bộ điểm, nhận xét và file PDF của lớp. Không khôi phục được. Tài khoản học sinh vẫn giữ nguyên.</span>
+      <label class="f" style="font-weight:500">Gõ <b>XOA</b> để xác nhận<input data-c autocomplete="off" style="max-width:10ch"></label>
+      <div class="actions"><button class="btn pen" data-y>Xoá vĩnh viễn</button><button class="btn ghost" data-n>Huỷ</button><span data-m></span></div></div>`;
+    slot.querySelector("[data-n]").onclick=()=>slot.innerHTML="";
+    slot.querySelector("[data-y]").onclick=async()=>{
+      const mm=slot.querySelector("[data-m]");
+      if(slot.querySelector("[data-c]").value.trim().toUpperCase()!=="XOA"){ mm.innerHTML='<span>Gõ XOA vào ô trên trước.</span>'; return; }
+      mm.innerHTML='<span>Đang xoá…</span>';
+      const [es,fs]=await Promise.all([
+        sb.from("essays").select("file_path").eq("class_id",c.id).not("file_path","is",null),
+        sb.from("feedback").select("pdf_path, essays!inner(class_id)").eq("essays.class_id",c.id).not("pdf_path","is",null)]);
+      const {error}=await sb.from("classes").delete().eq("id",c.id);
+      if(error){ mm.innerHTML=`<span>Chưa xoá được${errText(error)}</span>`; return; }
+      const sub=(es.data||[]).map(r=>r.file_path), pdf=(fs.data||[]).map(r=>r.pdf_path);
+      if(sub.length) await sb.storage.from("submissions").remove(sub);
+      if(pdf.length) await sb.storage.from("graded").remove(pdf);
+      await loadClasses(); if(!S.classes.some(x=>x.id===S.classId)) S.classId=S.classes[0]?.id||null;
+      S.essays=[]; S.feedback={}; renderClassHead(); renderClassBar(); renderClasses(true); loadAll();
+    };
+  }
+}
+document.querySelectorAll("#nav button").forEach(b=>b.onclick=()=>{ S.view=b.dataset.v; S.gradingId=null; if(S.view==="classes"){ $("#main").innerHTML=""; } render(); });
 boot();
 </script>
 </body>

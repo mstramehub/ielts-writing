@@ -38,6 +38,16 @@ Vào **Settings → Pages** của repo. Ở mục **Source**, chọn **Deploy fr
 
 ---
 
+## Nhiều lớp học
+
+Một web dùng chung cho nhiều lớp. Học sinh lớp nào chỉ thấy bài của lớp đó.
+
+**Giáo viên:** tab **Quản lý lớp** → **Tạo lớp mới** → gửi **mã lớp** (hoặc bấm *Sao chép tin nhắn mời*) cho học sinh qua Zalo. Chuyển lớp bằng ô **Lớp** phía trên. Ở mỗi lớp có: xem danh sách học sinh, đổi tên, đổi mã, xoá lớp.
+
+**Học sinh:** đăng ký/đăng nhập → nhập mã lớp. Học nhiều lớp thì bấm **+ Tham gia lớp khác** và nhập thêm mã.
+
+Sau khi cập nhật web lên bản nhiều lớp, chạy lại `supabase/schema.sql` một lần. Bài cũ tự chuyển vào lớp *LỚP IELTS Writing | IELTS SPEEDING-UP*.
+
 ## Cách dùng
 
 **Học sinh**
